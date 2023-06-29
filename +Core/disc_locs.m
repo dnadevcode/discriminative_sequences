@@ -1,7 +1,7 @@
-function [refNums,allNums] = disc_locs(rezMax,barGen)
+function [refNums,allNums] = disc_locs(rezMax)
 
-refNums = cell(1,length(barGen));
-for barIx = 1:length(barGen);
+refNums = cell(1,length(rezMax{1}));
+for barIx = 1:length(rezMax{1});
 %     toc
     allCCs = cellfun(@(x) x{barIx}.maxcoef(1),rezMax);
 

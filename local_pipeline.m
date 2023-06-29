@@ -1,10 +1,50 @@
-function [] = local_alignment_gui(sets)
-timestamp = datestr(clock(), 'yyyy-mm-dd_HH_MM_SS');
-% 
-% 
-if nargin < 1
-    % create sets
+function [] = local_pipeline(ix,dirName)
+
+
+% EC17 = DA65780
+% EC15 = DA65783
+% EC6 = DA65808
+% EC24 = DA65788
+% EC25 = DA65793
+
+% folds
+% directory name
+thryFiles = dir('/proj/snic2022-5-384/users/x_albdv/data/CHR/New Ref-Theory files May 2022/*.mat');
+
+if nargin < 2
+    dirName = '/proj/snic2022-5-384/users/x_albdv/data/bargrouping/local/';
 end
+addpath(genpath(dirName));
+[~,~] =mkdir('output');
+if nargin < 1
+    ix = 1;
+end
+
+dirStruct = dir(dirName);
+dirStruct(~[dirStruct.isdir]) = [];  %remove non-directories
+dirStruct(ismember( {dirStruct.name}, {'.', '..'})) = [];  %remove . and ..
+
+
+
+subDir = dir(fullfile(dirStruct(ix).folder,dirStruct(ix).name));
+subDir(ismember( {subDir.name}, {'.', '..'})) = [];  %remove . and ..
+
+%
+iy = 1; % most likely single run
+sets.dirName = fullfile(subDir(iy).folder,subDir(iy).name);
+
+spltName = strsplit(sets.dirName ,'_');
+spltName2 = strsplit(spltName{end},'nm');
+spltName3 = strsplit(spltName{end-1},'nm');
+sets.nmbp = str2double(spltName2{1});
+nmpx = str2double(spltName3{1});
+
+
+% load theory
+thryFileIdx = find(arrayfun(@(x) ~isempty(strfind(thryFiles(x).name,spltName{end-1})),1:length(thryFiles)));
+sets.thryFile = fullfile(thryFiles(thryFileIdx).folder,thryFiles(thryFileIdx).name);
+
+%%
 
 files = dir(fullfile(sets.dirName,'*.tif'));
 
@@ -26,16 +66,19 @@ sets.theory.stretchFactors = 0.9:0.025:1.1; %as per
 
 sets.alignMethod = 1;
 sets.edgeDetectionSettings.method = 'Otsu';
+
+%% START CALCULATION
 % load kymograph data
 import Core.load_kymo_data;
 [kymoStructs,barGen] = load_kymo_data(sets);
 
+save([sets.dirName, 'bars.mat'],'barGen');
 
-figure,tiledlayout(ceil(sqrt(length(kymoStructs))),ceil(length(kymoStructs)/sqrt(length(kymoStructs))),'TileSpacing','none','Padding','none')
-for i=1:length(kymoStructs)
-    nexttile;        imshowpair(imresize(kymoStructs{i}.alignedMask,[200 500]),imresize(kymoStructs{i}.alignedKymo,[200 500]), 'ColorChannels','red-cyan'  );    title(num2str(i));
-% imshowpair(imresize(kymoStructs{i}.unalignedBitmask,[200 500]),imresize(kymoStructs{i}.unalignedKymo,[200 500]), 'ColorChannels','red-cyan'  )
-end
+% figure,tiledlayout(ceil(sqrt(length(kymoStructs))),ceil(length(kymoStructs)/sqrt(length(kymoStructs))),'TileSpacing','none','Padding','none')
+% for i=1:length(kymoStructs)
+%     nexttile;        imshowpair(imresize(kymoStructs{i}.alignedMask,[200 500]),imresize(kymoStructs{i}.alignedKymo,[200 500]), 'ColorChannels','red-cyan'  );    title(num2str(i));
+% % imshowpair(imresize(kymoStructs{i}.unalignedBitmask,[200 500]),imresize(kymoStructs{i}.unalignedKymo,[200 500]), 'ColorChannels','red-cyan'  )
+% end
 
 % load(thryFile);
 sets.theoryFile{1} = sets.thryFile;
@@ -59,6 +102,12 @@ sets.w = 300;
 sets.comparisonMethod = 'mass_pcc';
 sets.genConsensus = 0;
 sets.filterSettings.filter = 0;
+globalov = 0;
+
+import Core.extract_species_name; % find e-coli
+[speciesLevel, idc] = extract_species_name(theoryStruct);
+if globalov
+
 % compare theory to experiment
 import CBT.Hca.Core.Comparison.compare_distance;
 [rezMax,bestBarStretch,bestLength] = compare_distance(barGen,theoryStruct, sets, [] );
@@ -75,28 +124,63 @@ import CBT.Hca.Core.Comparison.compare_distance;
 % selectedRef = sortedid(find(a>a(1)-cdiff))
 
 %% Local - how many significant matches
-import Core.disc_locs;
-[refNums,allNums] = disc_locs(rezMax,barGen)
 
-signMatch = find(allNums ==1)
-% refNums(signMatch)
-theoryStruct([cell2mat(refNums(signMatch))]).name;
 
-import Core.extract_species_name;
-[speciesLevel] = extract_species_name(theoryStruct);
 
-allSpecies = find(speciesLevel);
+import Core.discrim_true_positives;
+[truePositives,discSpecies,discAll,allNums,refNums,signMatch, fp,positives] = discrim_true_positives(rezMax, speciesLevel, idc);
+theoryStruct([cell2mat(refNums(signMatch))]).name
 
-discAll = cellfun(@(x) ismember(x,allSpecies),refNums,'UniformOutput',false)
 
-discSpecies = cellfun(@(x) sum(ismember(x,allSpecies)==0),refNums,'UniformOutput',true)
-sum(discSpecies==0) % also count false positives?
+theoryStruct([cell2mat(refNums(5))]).name
 
 % also export info about disc species
 import Core.export_coefs;
 export_coefs(theoryStruct,rezMax,bestBarStretch,barGen,[sets.dirName, '_PCC_']);
+end
+% coefs to rezmax 
+
 % import CBT.Hca.Export.export_cc_vals_table;
 % [T] = export_cc_vals_table( theoryStruct, comparisonStructAll, barcodeGenC,matDirpath);
+
+
+%%
+
+% theoryStruct([refNumsMP{5}]).name;
+windowWidths = 400:100:600;
+sets.comparisonMethod = 'mpnan';
+
+
+import CBT.Hca.Core.Comparison.compare_distance;
+
+for wIdx = 1:length(windowWidths)
+    sets.w = windowWidths(wIdx);
+    passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask),barGen) >= sets.w);
+
+    % assign standard scores
+%     rezMaxMP = rezMax;
+%     bestBarStretchMP = bestBarStretch;
+%     bestLengthMP = bestLength;
+
+    [rezMaxMP,bestBarStretchMP,bestLengthMP] = compare_distance(barGen(passingThreshBars),theoryStruct, sets, [] );
+
+    import Core.discrim_true_positives;
+    [truePositivesMP{wIdx},discSpeciesMP{wIdx},discAllMP{wIdx},allNumsMP{wIdx},refNumsMP{wIdx},signMatchMP{wIdx}] =...
+        discrim_true_positives(rezMaxMP,speciesLevel,idc);
+
+%     sum(discSpecies(passingThreshBars)==0)
+%     truePositivesMP{wIdx}
+
+    %
+    import Core.export_coefs;
+    export_coefs(theoryStruct,rezMaxMP,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
+
+%     discSpecies(passingThreshBars)==0
+% discSpeciesMP{wIdx}==0
+% [truePositives,discSpecies,discAll,allNums,refNums,signMatch] = discrim_true_positives(rezMax,barGen,speciesLevel);
+end
+
+
 mpcalc = 0;
 if mpcalc
 % save output PCC
@@ -173,9 +257,20 @@ end
 %     quick_visual_plot(sigmatches(i),9242,barGen,rezMax,bestBarStretch,theoryStruct)
 % end
 
-cell2mat(refNums(sigmatches))
+% cell2mat(refNums(sigmatches))
 % refNums(signMatch)
 % theoryStruct([cell2mat(refNums(signMatch))]).name;
 
 
+
+% local_alignment_gui(sets)
+
+
+
+% files = dir('/proj/snic2022-5-384/users/x_albdv/data/bargrouping/local/Ecoli_DA65808/RawKymographs 1908XX - 110nm - 0.267nm_bp/*.tif');
+
+
+
+
 end
+

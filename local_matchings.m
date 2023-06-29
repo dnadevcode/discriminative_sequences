@@ -51,7 +51,7 @@ sets.genConsensus = 0;
 sets.filterSettings.filter = 0;
 % compare theory to experiment
 import CBT.Hca.Core.Comparison.compare_distance;
-[rezMax,bestBarStretch,bestLength] = compare_distance(barGen,theoryStruct, sets, [] );
+[rezMax,bestBarStretch,bestLength] = compare_distance(barGen,theoryStructT, sets, [] );
 %
 barIx = 2;
 toc
@@ -79,7 +79,7 @@ sets.w = 400;
 sets.comparisonMethod = 'mpnan';
 
 import CBT.Hca.Core.Comparison.compare_distance;
-[rezMaxMP,bestBarStretchMP,bestLengthMP] = compare_distance(barGen,theoryStruct, sets, [] );
+[rezMaxMP,bestBarStretchMP,bestLengthMP] = compare_distance(barGen,theoryStructT, sets, [] );
 %%%
 
 
