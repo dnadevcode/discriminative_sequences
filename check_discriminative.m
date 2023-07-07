@@ -36,6 +36,10 @@ positivesPCC = positives==1;
 
 {theoryStruct([cell2mat(refNums(2))]).name}'
 
+
+filesMP = {'210901_Sample2_110nmPERpx_0.200nmPERbp_MP_w=400_table_2023-06-29_13_18_54.txt'};
+
+
 filesMP = {
     '211213_Sample358-3-st2_110nm_0.169nmPERbp_MP_w=400_table_2023-06-16_01_37_18.txt',...
     '211213_Sample358-3-st2_110nm_0.169nmPERbp_MP_w=500_table_2023-06-16_02_53_59.txt',...
@@ -44,7 +48,13 @@ filesMP = {
 successRate = zeros(1,3);
 for ix=1:3
     [rezMax,barnamesMP] = Core.load_coefs(filesMP{ix});
-    barsPassThresh = ismember(barnames,barnamesMP);
+%     try
+%         barsPassThresh = ismember(barnames,barnamesMP);
+%     catch
+        barsPassThresh = ismember(cellfun(@(x) strrep(x.name(1:end-4),'-','_'),barGen,'un',false),barnamesMP);
+%     end
+
+
     [truePositivesMP,discSpeciesMP,discAllMP,allNumsMP,refNumsMP,signMatchMP, fpMP,positivesMP] = ...
         discrim_true_positives(rezMax, speciesLevel, idc);
 
@@ -56,6 +66,6 @@ for ix=1:3
 end
 % sum(positives==1)/length(rezMax{1})
 theoryStruct(refNums{6}).name
-{theoryStruct([cell2mat(refNumsMP(6))]).name}'
+{theoryStruct([cell2mat(refNumsMP(25))]).name}'
 
 cellfun(@(x) x.bestBarStretch, rezMax{refNums{6}(1)})

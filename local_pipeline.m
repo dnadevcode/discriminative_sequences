@@ -1,4 +1,4 @@
-function [] = local_pipeline(ix,dirName)
+function [] = local_pipeline(ix,dirName,depth)
 
 
 % EC17 = DA65780
@@ -7,6 +7,9 @@ function [] = local_pipeline(ix,dirName)
 % EC24 = DA65788
 % EC25 = DA65793
 
+if nargin < 3
+    depth = 1;
+end
 % folds
 % directory name
 thryFiles = dir('/proj/snic2022-5-384/users/x_albdv/data/CHR/New Ref-Theory files May 2022/*.mat');
@@ -25,9 +28,12 @@ dirStruct(~[dirStruct.isdir]) = [];  %remove non-directories
 dirStruct(ismember( {dirStruct.name}, {'.', '..'})) = [];  %remove . and ..
 
 
-
-subDir = dir(fullfile(dirStruct(ix).folder,dirStruct(ix).name));
-subDir(ismember( {subDir.name}, {'.', '..'})) = [];  %remove . and ..
+if depth == 1
+    subDir = dir(fullfile(dirStruct(ix).folder,dirStruct(ix).name));
+    subDir(ismember( {subDir.name}, {'.', '..'})) = [];  %remove . and ..
+else
+    subDir = dirStruct(ix);
+end
 
 %
 iy = 1; % most likely single run
@@ -41,7 +47,7 @@ nmpx = str2double(spltName3{1});
 
 
 % load theory
-thryFileIdx = find(arrayfun(@(x) ~isempty(strfind(thryFiles(x).name,spltName{end-1})),1:length(thryFiles)));
+thryFileIdx = find(arrayfun(@(x) ~isempty(strfind(thryFiles(x).name,spltName{end-1}(1:5))),1:length(thryFiles)));
 sets.thryFile = fullfile(thryFiles(thryFileIdx).folder,thryFiles(thryFileIdx).name);
 
 %%

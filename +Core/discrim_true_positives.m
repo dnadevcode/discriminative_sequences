@@ -1,5 +1,12 @@
 function [truePositives,discSpecies,discAll,allNums,refNums,signMatch,fp,positives] = discrim_true_positives(rezMax,speciesLevel, idc)
 
+%Returns:   
+%   truePositives - true positives based on allspecies
+%   discSpecies - how many strains is it discriminative to
+%   discAll - binary vector of all strains its discriminative to
+%   allNums - all discriminative locations
+%   refNums - refnums of discriminative locations
+%   signMatch - numver of unique discriminative locations
 import Core.disc_locs;
 [refNums,allNums] = disc_locs(rezMax);
 
