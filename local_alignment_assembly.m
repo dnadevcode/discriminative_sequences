@@ -1,33 +1,20 @@
-function [rezMax,bestBarStretch,bestLength,discSpecies] = local_alignment_assembly(barGen, nmbp,w)
+function [rezMax,bestBarStretch,bestLength,discSpecies,refNums] = local_alignment_assembly(theoryStruct, barGen,w)
     % Tailored to work with kymographs from barcode assembly problem to
     % find which are discriminative, so we skip to bargen
 
 timestamp = datestr(clock(), 'yyyy-mm-dd_HH_MM_SS');
+sets.dirName = 'output';
+
 % 
 % 
 if nargin < 1
     % create sets
 end
 
-sets.dirName = 'output';
-sets.nmbp = nmbp;
-thryFiles = dir('/export/scratch/albertas/data_temp/bargrouping/New Ref-Theory files May 2022/*.mat');
-thryFileIdx = 1;
-% thryFileIdx = find(arrayfun(@(x) ~isempty(strfind(thryFiles(x).name,spltName{end-1})),1:length(thryFiles)));
-sets.thryFile = fullfile(thryFiles(thryFileIdx).folder,thryFiles(thryFileIdx).name);
+% import Core.load_theory_structure;
+% thryFileIdx = 1; % todo: pass directly the theory file here
+% [theoryStruct,sets] = load_theory_structure(nmbp,thryFileIdx);
 
-% files = dir(fullfile(sets.dirName,'*.tif'));
-
-% sets.kymosets.filenames = arrayfun(@(x) files(x).name,1:length(files),'un',false);
-% sets.kymosets.kymofilefold = arrayfun(@(x) files(x).folder,1:length(files),'un',false);
-
-% simdata = 0;
-sets.output.matDirpath = 'output';
-sets.filterSettings.filter = 0;
-sets.skipEdgeDetection = 0;
-sets.bitmasking.untrustedPx = 6;
-sets.minLen = 250;
-sets.genConsensus  = 0;
 
 %  following "Strain-level bacterial typing directly from patient
 % samples using optical DNA mapping"
@@ -36,32 +23,7 @@ sets.theory.stretchFactors = 0.9:0.025:1.1; %as per
 
 sets.alignMethod = 1;
 sets.edgeDetectionSettings.method = 'Otsu';
-% load kymograph data
-% import Core.load_kymo_data;
-% [kymoStructs,barGen] = load_kymo_data(sets);
 
-% 
-% figure,tiledlayout(ceil(sqrt(length(kymoStructs))),ceil(length(kymoStructs)/sqrt(length(kymoStructs))),'TileSpacing','none','Padding','none')
-% for i=1:length(kymoStructs)
-%     nexttile;        imshowpair(imresize(kymoStructs{i}.alignedMask,[200 500]),imresize(kymoStructs{i}.alignedKymo,[200 500]), 'ColorChannels','red-cyan'  );    title(num2str(i));
-% % imshowpair(imresize(kymoStructs{i}.unalignedBitmask,[200 500]),imresize(kymoStructs{i}.unalignedKymo,[200 500]), 'ColorChannels','red-cyan'  )
-% end
-
-% load(thryFile);
-sets.theoryFile{1} = sets.thryFile;
-sets.theoryFileFold{1} = '';
-sets.theory.precision = 5;
-sets.theory.theoryDontSaveTxts = 1;
-import CBT.Hca.UI.Helper.load_theory;
-theoryStruct = load_theory(sets);
-
-% extract from name
-sets.theory.nmbp = sets.nmbp;
-
-import CBT.Hca.Core.Analysis.convert_nm_ratio;
-theoryStruct = convert_nm_ratio(sets.theory.nmbp, theoryStruct,sets );
-
-% convert thry to correct nm/px
 
 %
 tic
@@ -87,11 +49,12 @@ import CBT.Hca.Core.Comparison.compare_distance;
 
 %% Local - how many significant matches
 import Core.disc_locs;
-[refNums,allNums] = disc_locs(rezMax,barGen)
+[refNums,allNums] = disc_locs(rezMax)
 
 signMatch = find(allNums ==1);
 % refNums(signMatch)
-theoryStruct([cell2mat(refNums(signMatch))]).name;
+% theoryStruct([cell2mat(refNums(signMatch))]).name;
+% theoryStruct([cell2mat(refNums(:))]).name;
 
 import Core.extract_species_name;
 [speciesLevel] = extract_species_name(theoryStruct);
@@ -176,7 +139,7 @@ end
 %     quick_visual_plot(sigmatches(i),9242,barGen,rezMax,bestBarStretch,theoryStruct)
 % end
 
-cell2mat(refNums(sigmatches))
+% cell2mat(refNums(sigmatches))
 % refNums(signMatch)
 % theoryStruct([cell2mat(refNums(signMatch))]).name;
 
