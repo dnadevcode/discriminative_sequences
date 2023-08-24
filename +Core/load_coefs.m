@@ -13,6 +13,7 @@ function [rezMax,barnames] = load_coefs(coefdata)
             rezMax{i}{j}.lengthMatch = data.data(i,2+4*(j-1));
             rezMax{i}{j}.pos = data.data(i,3+4*(j-1));
             rezMax{i}{j}.bestBarStretch = data.data(i,4+4*(j-1));
+            % missing: orientation
         end
     end
 

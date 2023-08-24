@@ -1,4 +1,4 @@
-function [] = local_pipeline(ix,dirName,depth)
+function [] = local_pipeline(ix,dirName,depth,windowWidths)
 
 
 % EC17 = DA65780
@@ -6,6 +6,10 @@ function [] = local_pipeline(ix,dirName,depth)
 % EC6 = DA65808
 % EC24 = DA65788
 % EC25 = DA65793
+
+if nargin < 4
+    windowWidths = 400:100:600;
+end
 
 if nargin < 3
     depth = 1;
@@ -78,7 +82,7 @@ sets.edgeDetectionSettings.method = 'Otsu';
 import Core.load_kymo_data;
 [kymoStructs,barGen] = load_kymo_data(sets);
 
-save([sets.dirName, 'bars.mat'],'barGen');
+save([sets.dirName, 'bars.mat'],'barGen','sets');
 
 % figure,tiledlayout(ceil(sqrt(length(kymoStructs))),ceil(length(kymoStructs)/sqrt(length(kymoStructs))),'TileSpacing','none','Padding','none')
 % for i=1:length(kymoStructs)
@@ -153,7 +157,7 @@ end
 %%
 
 % theoryStruct([refNumsMP{5}]).name;
-windowWidths = 400:100:600;
+% windowWidths = 400:100:600;
 sets.comparisonMethod = 'mpnan';
 
 
@@ -180,6 +184,7 @@ for wIdx = 1:length(windowWidths)
     %
     import Core.export_coefs;
     export_coefs(theoryStruct,rezMaxMP,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
+    save([sets.dirName, num2str(sets.w),'_rez.mat'],'rezMaxMP','passingThreshBars','sets');
 
 %     discSpecies(passingThreshBars)==0
 % discSpeciesMP{wIdx}==0
