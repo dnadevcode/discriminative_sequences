@@ -1,4 +1,4 @@
-function [rezMax,bestBarStretch,bestLength,discSpecies,refNums] = local_alignment_assembly(theoryStruct, barGen,w)
+function [rezMax,bestBarStretch,bestLength,rezOut] = local_alignment_assembly(theoryStruct, barGen,w)
     % Tailored to work with kymographs from barcode assembly problem to
     % find which are discriminative, so we skip to bargen
 
@@ -27,14 +27,26 @@ sets.edgeDetectionSettings.method = 'Otsu';
 
 %
 tic
-sets.w = w;
+if isempty(w)
+    sets.w = 300;
+else
+    sets.w = w(1); % not needed for mass_pcc
+end
+
 sets.comparisonMethod = 'mass_pcc';
 sets.genConsensus = 0;
 sets.filterSettings.filter = 0;
 % barGen = bgAll(1:200);
 % compare theory to experiment
 import CBT.Hca.Core.Comparison.compare_distance;
-[rezMax,bestBarStretch,bestLength] = compare_distance(barGen,theoryStruct, sets, [] );
+[rezMax,bestBarStretch,bestLength] = compare_distance(barGen,theoryStruct, sets, sets.w );
+
+rezOut = cell(1,length(w)+1);
+
+rezOut{1}.rezMax = rezMax;
+rezOut{1}.bestBarStretch = bestBarStretch;
+rezOut{1}.bestLength = bestLength;
+
 
 % toc
 %% Selected seq
@@ -48,23 +60,27 @@ import CBT.Hca.Core.Comparison.compare_distance;
 % selectedRef = sortedid(find(a>a(1)-cdiff))
 
 %% Local - how many significant matches
-import Core.disc_locs;
-[refNums,allNums] = disc_locs(rezMax)
-
-signMatch = find(allNums ==1);
-% refNums(signMatch)
-% theoryStruct([cell2mat(refNums(signMatch))]).name;
-% theoryStruct([cell2mat(refNums(:))]).name;
-
-import Core.extract_species_name;
-[speciesLevel] = extract_species_name(theoryStruct);
-
-allSpecies = find(speciesLevel);
-
-discAll = cellfun(@(x) ismember(x,allSpecies),refNums,'UniformOutput',false)
-
-discSpecies = cellfun(@(x) sum(ismember(x,allSpecies)==0),refNums,'UniformOutput',true)
-sum(discSpecies==0)
+%     import Core.discrim_true_positives;
+%     [truePositives,discSpecies,discAll,allSpecies,refNums,signMatch] =...
+%         discrim_true_positives(rezMaxMP,speciesLevel,idc);
+% 
+% import Core.disc_locs;
+% [refNums,allNums] = disc_locs(rezMax)
+% 
+% signMatch = find(allNums ==1);
+% % refNums(signMatch)
+% % theoryStruct([cell2mat(refNums(signMatch))]).name;
+% % theoryStruct([cell2mat(refNums(:))]).name;
+% 
+% import Core.extract_species_name;
+% [speciesLevel] = extract_species_name(theoryStruct);
+% 
+% allSpecies = find(speciesLevel);
+% 
+% discAll = cellfun(@(x) ismember(x,allSpecies),refNums,'UniformOutput',false)
+% 
+% discSpecies = cellfun(@(x) sum(ismember(x,allSpecies)==0),refNums,'UniformOutput',true)
+% sum(discSpecies==0)
 % 
 % % also export info about disc species
 % import Core.export_coefs;
@@ -72,17 +88,20 @@ sum(discSpecies==0)
 % % import CBT.Hca.Export.export_cc_vals_table;
 % % [T] = export_cc_vals_table( theoryStruct, comparisonStructAll, barcodeGenC,matDirpath);
 % 
-
-
-% theoryStruct([refNumsMP{5}]).name;
-windowWidths = 400;%400:100:600;
+% mpcalc = 0;
+% 
+% if mpcalc
+ 
+% speciesLevel
 sets.comparisonMethod = 'mpnan';
 
 
 import CBT.Hca.Core.Comparison.compare_distance;
 
-for wIdx = 1:length(windowWidths)
-    sets.w = windowWidths(wIdx);
+% rezOut = cell(1,length(w));
+
+for wIdx = 1:length(w)
+    sets.w = w(wIdx);
     passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask),barGen) >= sets.w);
 
     % assign standard scores
@@ -92,20 +111,27 @@ for wIdx = 1:length(windowWidths)
 
     [rezMaxMP,bestBarStretchMP,bestLengthMP] = compare_distance(barGen(passingThreshBars),theoryStruct, sets, [] );
 
-    import Core.discrim_true_positives;
-    [truePositivesMP{wIdx},discSpeciesMP{wIdx},discAllMP{wIdx},allNumsMP{wIdx},refNumsMP{wIdx},signMatchMP{wIdx}] =...
-        discrim_true_positives(rezMaxMP,speciesLevel,idc);
+    rezOut{wIdx+1}.rezMax = rezMaxMP;
+    rezOut{wIdx+1}.bestBarStretch = bestBarStretchMP;
+    rezOut{wIdx+1}.bestLength = bestLengthMP;
+
+%     import Core.discrim_true_positives;
+%     [truePositivesMP{wIdx},discSpeciesMP{wIdx},discAllMP{wIdx},allNumsMP{wIdx},refNumsMP{wIdx},signMatchMP{wIdx}] =...
+%         discrim_true_positives(rezMaxMP,speciesLevel,idc);
 
 %     sum(discSpecies(passingThreshBars)==0)
 %     truePositivesMP{wIdx}
 
-%     %
+    %
 %     import Core.export_coefs;
 %     export_coefs(theoryStruct,rezMaxMP,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
+%     save([sets.dirName, num2str(sets.w),'_rez.mat'],'rezMaxMP','passingThreshBars','sets');
 
 %     discSpecies(passingThreshBars)==0
 % discSpeciesMP{wIdx}==0
 % [truePositives,discSpecies,discAll,allNums,refNums,signMatch] = discrim_true_positives(rezMax,barGen,speciesLevel);
+% end
+
 end
 
 

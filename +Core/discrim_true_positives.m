@@ -17,8 +17,10 @@ signMatch = find(logical(allNums ==1));
 
 allSpecies = find(speciesLevel);
 allSpecUnique = unique(idc(find(speciesLevel)));
+try
 idc(idc==allSpecUnique(2)) = allSpecUnique(1);
-
+catch
+end
 discAll = cellfun(@(x) ismember(x,allSpecies),refNums,'UniformOutput',false);
 
 discSpecies = cellfun(@(x) sum(ismember(x,allSpecies)==0),refNums,'UniformOutput',true);

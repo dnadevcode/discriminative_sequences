@@ -48,9 +48,19 @@ theoryStruct = [theoryStruct; theoryStructNew];
 %% compare and get discriminative stuff
 
 barGenRun = bgAll(1);
-w = 300;
-[rezMax,bestBarStretch,bestLength,discSpecies,refNums] = local_alignment_assembly(theoryStruct, barGenRun,w);
+w = 400;
+[rezMax,bestBarStretch,bestLength,rezOut] = local_alignment_assembly(theoryStruct, barGenRun,w);
 
+
+import Core.extract_species_name;
+[speciesLevel,idc] = extract_species_name(theoryStruct);
+% 
+idx = 1;
+import Core.discrim_true_positives;
+[truePositives,discSpecies,discAll,allSpecies,refNums,signMatch] =...
+discrim_true_positives(rezOut{idx}.rezMax,speciesLevel,idc);
+
+{theoryStruct([refNums{1}]).name}'
 
 %%
 tic
@@ -81,7 +91,12 @@ maxCoefsBest = arrayfun(@(y) max(arrayfun(@(x) max(rezMax{x}{y}.maxcoef(1)),refN
 maxCC(1:length(maxCoefsBest)) - maxCoefsBest
 
 %%
-selRef=194;
+
+rezMax = rezOut{1}.rezMax;
+bestBarStretch = rezOut{1}.bestBarStretch;
+% rezMax = rezOut{1}.rezMax;
+
+selRef=1;
 
 %     maxCoefs = arrayfun(@(x) rezMax{x}{selRef}.maxcoef(1),refNums{selRef}(:));
 
@@ -92,7 +107,10 @@ maxCoefs = arrayfun(@(x) rezMax{x}{selRef}.maxcoef(1),1:length(rezMax));
     idx = 1;
     idx1 = selRef;
     quick_visual_plot(1,refNums{selRef}(idx),barGenRun,rezMax,bestBarStretch,theoryStruct)
-    
+    super_quick_plot(1,barGenRun,rezOut{1},theoryStruct)
+
+    % time-frame bootstrapping
+
 thrIdx = refNums{selRef}(idx);%length(theoryStruct)-1; %refNums{1}(idx);
     
     lenBarTested = length(barGenRun{idx1}.rawBarcode);
