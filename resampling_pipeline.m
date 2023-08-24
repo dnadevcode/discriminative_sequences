@@ -4,7 +4,7 @@
 
 addpath(genpath('/home/etlar/albertas/reps/lldev'))
 addpath(genpath('/home/etlar/albertas/reps/hca'))
-% addpath(genpath('/home/etlar/albertas/reps/bargroupingprototype'))
+addpath(genpath('/home/etlar/albertas/reps/bargroupingprototype'))
 addpath(genpath('/home/etlar/albertas/reps/discriminative_sequences'))
 
 addpath('/export/scratch/albertas/data_temp/bargrouping/ecoli/FASTAS/')
@@ -26,7 +26,8 @@ import Core.load_theory_structure;
 thryFileIdx = 1; % todo: pass directly the theory file here
 [theoryStruct,sets] = load_theory_structure(nmbp,thryFileIdx);
 
- 
+%% optional: keep only e-coli
+
 %%
 %% todo: also add current theoretical barcode to theoryStruct
 import Thry.gen_theoretical;
@@ -46,7 +47,7 @@ theoryStruct = [theoryStruct; theoryStructNew];
 % theoryStruct = theoryStructNew
 %% compare and get discriminative stuff
 
-barGenRun = bgAll;
+barGenRun = bgAll(1);
 w = 300;
 [rezMax,bestBarStretch,bestLength,discSpecies,refNums] = local_alignment_assembly(theoryStruct, barGenRun,w);
 

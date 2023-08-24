@@ -65,12 +65,50 @@ discAll = cellfun(@(x) ismember(x,allSpecies),refNums,'UniformOutput',false)
 
 discSpecies = cellfun(@(x) sum(ismember(x,allSpecies)==0),refNums,'UniformOutput',true)
 sum(discSpecies==0)
+% 
+% % also export info about disc species
+% import Core.export_coefs;
+% export_coefs(theoryStruct,rezMax,bestBarStretch,barGen,[sets.dirName, '_PCC_']);
+% % import CBT.Hca.Export.export_cc_vals_table;
+% % [T] = export_cc_vals_table( theoryStruct, comparisonStructAll, barcodeGenC,matDirpath);
+% 
 
-% also export info about disc species
-import Core.export_coefs;
-export_coefs(theoryStruct,rezMax,bestBarStretch,barGen,[sets.dirName, '_PCC_']);
-% import CBT.Hca.Export.export_cc_vals_table;
-% [T] = export_cc_vals_table( theoryStruct, comparisonStructAll, barcodeGenC,matDirpath);
+
+% theoryStruct([refNumsMP{5}]).name;
+windowWidths = 400;%400:100:600;
+sets.comparisonMethod = 'mpnan';
+
+
+import CBT.Hca.Core.Comparison.compare_distance;
+
+for wIdx = 1:length(windowWidths)
+    sets.w = windowWidths(wIdx);
+    passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask),barGen) >= sets.w);
+
+    % assign standard scores
+%     rezMaxMP = rezMax;
+%     bestBarStretchMP = bestBarStretch;
+%     bestLengthMP = bestLength;
+
+    [rezMaxMP,bestBarStretchMP,bestLengthMP] = compare_distance(barGen(passingThreshBars),theoryStruct, sets, [] );
+
+    import Core.discrim_true_positives;
+    [truePositivesMP{wIdx},discSpeciesMP{wIdx},discAllMP{wIdx},allNumsMP{wIdx},refNumsMP{wIdx},signMatchMP{wIdx}] =...
+        discrim_true_positives(rezMaxMP,speciesLevel,idc);
+
+%     sum(discSpecies(passingThreshBars)==0)
+%     truePositivesMP{wIdx}
+
+%     %
+%     import Core.export_coefs;
+%     export_coefs(theoryStruct,rezMaxMP,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
+
+%     discSpecies(passingThreshBars)==0
+% discSpeciesMP{wIdx}==0
+% [truePositives,discSpecies,discAll,allNums,refNums,signMatch] = discrim_true_positives(rezMax,barGen,speciesLevel);
+end
+
+
 mpcalc = 0;
 if mpcalc
 % save output PCC
