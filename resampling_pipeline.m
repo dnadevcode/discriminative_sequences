@@ -1,5 +1,8 @@
 % resampling pipeline
 
+% We're testing all the different possible methods to get a standard error
+% on the local alignment scores
+
 % Should run this for global and local alignment
 
 addpath(genpath('/home/etlar/albertas/reps/lldev'))
@@ -15,7 +18,7 @@ addpath(genpath('/proj/snic2022-5-384/users/x_albdv/data/bargrouping/ecoli/FASTA
 
 % data loading
 import Core.load_chrom_data;
-[bgAll, bG, kymoStructs] = load_chrom_data('/export/scratch/albertas/data_temp/bargrouping_selected/ecoli_1/sample_5/');
+[bgAll, bG, kymoStructs] = load_chrom_data('/export/scratch/albertas/data_temp/bargrouping_selected/ecoli_1/sample_2/');
 fastaFiles(1:length(bG)) = 1;
 
 nmbp = 0.225;
@@ -48,7 +51,7 @@ theoryStruct = [theoryStruct; theoryStructNew];
 %% compare and get discriminative stuff
 
 barGenRun = bgAll(1);
-w = 400;
+w = 500;
 [rezMax,bestBarStretch,bestLength,rezOut] = local_alignment_assembly(theoryStruct, barGenRun,w);
 
 
@@ -61,6 +64,23 @@ import Core.discrim_true_positives;
 discrim_true_positives(rezOut{idx}.rezMax,speciesLevel,idc);
 
 {theoryStruct([refNums{1}]).name}'
+
+%% visualize the best result
+selRef = 1;
+idx = 1;
+idx1 = selRef;
+quick_visual_plot(1,refNums{selRef}(idx),barGenRun,rezMax,bestBarStretch,theoryStruct)
+super_quick_plot(1,barGenRun,rezOut{1},theoryStruct)
+%% super_quick_plot_mp
+
+
+import Core.plot_match_simple;
+% [f] = plot_match_simple(barStruct, oS,curSink,curSource);
+[f] = plot_match_simple([barGenRun(selRef) barcodeGenT],rezOut{2}, 1, refNums{selRef}(idx)+1);
+
+import Core.plot_match_pcc;
+[sortedValsIs, sortedIdsIs,pscoresIs] = sorted_scores(oSIslands);
+
 
 %%
 tic
@@ -110,7 +130,9 @@ maxCoefs = arrayfun(@(x) rezMax{x}{selRef}.maxcoef(1),1:length(rezMax));
     super_quick_plot(1,barGenRun,rezOut{1},theoryStruct)
 
     % time-frame bootstrapping
+    timeframe_bootstrapping
 
+    %%
 thrIdx = refNums{selRef}(idx);%length(theoryStruct)-1; %refNums{1}(idx);
     
     lenBarTested = length(barGenRun{idx1}.rawBarcode);
