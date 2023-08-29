@@ -1,4 +1,4 @@
-function [theoryStruct,sets] = load_theory_structure(nmbp, thryFileIdx)
+function [theoryStruct,sets] = load_theory_structure(nmbp, thryFileIdx,selected)
 
 
 sets.dirName = 'output';
@@ -40,6 +40,10 @@ sets.theory.precision = 5;
 sets.theory.theoryDontSaveTxts = 1;
 import CBT.Hca.UI.Helper.load_theory;
 theoryStruct = load_theory(sets);
+
+if nargin >=3
+    theoryStruct = theoryStruct(selected);
+end
 
 % extract from name
 sets.theory.nmbp = sets.nmbp;

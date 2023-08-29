@@ -51,7 +51,7 @@ theoryStruct = [theoryStruct; theoryStructNew];
 %% compare and get discriminative stuff
 
 barGenRun = bgAll(1);
-w = [200:50:650];
+w = [];
 [rezMax,bestBarStretch,bestLength,rezOut] = local_alignment_assembly(theoryStruct, barGenRun,w);
 
 
@@ -76,18 +76,27 @@ import Core.plot_match_simple;
 % [f] = plot_match_simple(barStruct, oS,curSink,curSource);
 [f] = plot_match_simple([barGenRun(selRef) barcodeGenT],rezOut{2}, 1, refNums{selRef}(idx)+1);
 
-%%
-barGenRun = bgAll(5);
+%% first
+theoryStructSel = theoryStruct(refNums{1}(1));
+barGenRun = bgAll(1);
 w = [200:50:sum(barGenRun{1}.rawBitmask)];
-[rezMax,bestBarStretch,bestLength,rezOut] = local_alignment_assembly(theoryStruct, barGenRun,w);
+[rezMax, bestBarStretch, bestLength, rezOut1] = local_alignment_assembly(theoryStructSel, barGenRun,w);
 
+theoryStructSel2 = theoryStruct(refNums{1}(2:end));
+[rezMax2, bestBarStretch2, bestLength2, rezOut2] = local_alignment_assembly(theoryStructSel2, barGenRun,w);
 
+%
+ barGenRunStruct = cell2struct([cellfun(@(x) double(x.rawBarcode),barGenRun,'un',false);...
+        cellfun(@(x) x.rawBitmask,barGenRun,'un',false)]',{'rawBarcode','rawBitmask'},2);
 % import Core.plot_match_pcc;
 % [sortedValsIs, sortedIdsIs,pscoresIs] = sorted_scores(oSIslands);
 
 stdVals = zeros(1,length(rezOut)-1);
 for k=2:length(rezOut)
-    pccScore = block_bootstrapping([barGenRun(selRef) barcodeGenT],rezOut{k},1, refNums{selRef}(idx)+1);
+ 
+    barcodeGenTStruct = struct('rawBarcode',theoryStructNew(1).rawBarcode,'rawBitmask',true(1,length(theoryStructNew(1).rawBarcode)));
+
+    pccScore = block_bootstrapping([barGenRunStruct(selRef) barcodeGenTStruct(1)],rezOut1{k},1, 2);
     stdVals(k-1) = mean( pccScore) - 3*std(pccScore);
 end
 
@@ -99,7 +108,15 @@ end
 %second best
 stdVals2 = zeros(1,length(rezOut)-1);
 for k=2:length(rezOut)
-    pccScore2 = block_bootstrapping([barGenRun(selRef) barcodeGenT],rezOut{k},1, refNums{selRef}(idx)+2);
+    [~,~,~,~,refNums2,~] =...
+    discrim_true_positives(rezOut2{k}.rezMax,speciesLevel,idc);
+    barcodeGenTStruct = struct('rawBarcode',theoryStructSel2(refNums2{1}(1)).rawBarcode,'rawBitmask',true(1,length(theoryStructSel2(refNums2{1}(1)).rawBarcode)));
+
+    barGenRunStruct(refNums2{1}(1)+1) = barcodeGenTStruct;
+%     temps = [theoryStructSel2.rawBarcode,theoryStructSel2.rawBitmask];
+%     barcodeGenTStruct = struct('rawBarcode',theoryStructSel2.rawBarcode);
+
+    pccScore2 = block_bootstrapping(barGenRunStruct,rezOut2{k},1, refNums2{1}(1)+1);
     stdVals2(k-1) = mean( pccScore2) + 3*std(pccScore2);
 end
 
@@ -108,11 +125,30 @@ end
 % ylabel('mu+3sigma 2nd best bootstrapping')
 
 
-score = stdVals - stdVals2;
-figure,plot(w,score)
-xlabel('window width (w)')
-ylabel('$score = (\mu-3\sigma)_{best} -(\mu+3\sigma)_{2ndbest}$','Interpreter','latex')
 
+%second best
+numElts = zeros(1,length(rezOut)-1);
+for k=2:length(rezOut)
+    [~,~,~,~,refNumsAll,~] =...
+    discrim_true_positives([rezOut1{k}.rezMax rezOut2{k}.rezMax],speciesLevel,idc);
+    numElts(k-1) = length(refNumsAll{1});
+%     pccScore2 = block_bootstrapping([barGenRun(1) barcodeGenTStruct],rezOut{k},1, refNums2{1}(1)+1);
+%     stdVals2(k-1) = mean( pccScore2) + 3*std(pccScore2);
+end
+
+
+score = stdVals - stdVals2;
+figure,tiledlayout(2,1);
+nexttile
+plot(w,score)
+hold on
+xlabel('window width (w)')
+ylabel('score')
+title('$score = (\mu-3\sigma)_{best} -(\mu+3\sigma)_{2ndbest}$','Interpreter','latex')
+nexttile
+plot(w,numElts)
+xlabel('window width (w)')
+title('Number of matching theories within 0.05')
 %%
 tic
 % barGenRun = bgAll;
@@ -255,3 +291,16 @@ hold off
 
     %% Same but local alignment
     w = 300;
+
+
+    %%
+
+import Core.extract_species_name;
+[speciesLevel,idc] = extract_species_name(theoryStructSel);
+% 
+idx = 10;
+import Core.discrim_true_positives;
+[truePositives,discSpecies,discAll,allSpecies,refNumsSel,signMatch] =...
+discrim_true_positives(rezOut{idx}.rezMax,speciesLevel,idc);
+
+{theoryStructSel([refNumsSel{1}]).name}'
