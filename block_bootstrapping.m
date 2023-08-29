@@ -1,39 +1,23 @@
-function [outputArg1,outputArg2] = block_bootstrapping(inputArg1,inputArg2)
-
-
-    %%
-thrIdx = refNums{selRef}(idx);%length(theoryStruct)-1; %refNums{1}(idx);
-    
-    lenBarTested = length(barGenRun{idx1}.rawBarcode);
-    bar1 = interp1(barGenRun{idx1}.rawBarcode, linspace(1,lenBarTested,lenBarTested*bestBarStretch{thrIdx}(idx1)));
-    barB = barGenRun{idx1}.rawBitmask(round(linspace(1,lenBarTested,lenBarTested*bestBarStretch{thrIdx}(idx1))));
-    
-    
-    % bar1 = imresize(barGen{idx1}.rawBarcode(barGen{idx1}.rawBitmask),'Scale' ,[1 bestBarStretch{thrIdx}(idx1)]) ;
-    if rezMax{thrIdx}{idx1}.or(1) == 2
-        bar1 = fliplr(bar1);
+function [pccScore] = block_bootstrapping(barStruct,overlapStruct,k,iy,wWid,s)
+    % block_bootstrapping MP
+    if nargin < 5
+        wWid = 20;   % block window width
+        s = RandStream('mlfg6331_64'); 
     end
-    bar1 = bar1(barB);
-    
-    {theoryStruct([refNums{selRef}]).name}'
-    
-    thr = theoryStruct(thrIdx).theoryBarcode;
-    
-    pos = find(barGenRun{idx1}.rawBitmask==1,1,'first');
-    bar2 = thr(rezMax{thrIdx}{idx1}.pos+pos-1:rezMax{thrIdx}{idx1}.pos+length(bar1)-1+pos-1);
-    % 
-    zscore(bar1(:)',1)*zscore(bar2(:),1)/length(bar1(:))
-    
-    figure,plot(zscore(bar1,1));
-    hold on
-    plot(zscore(bar2))
+
+
+    [bar1, bar2] = get_local_subbarcode_pair(barStruct,overlapStruct,k,iy);
+%     
+% figure,plot(zscore(subBar1,1));
+% hold on
+% plot(zscore(subBar2))
+%     
     
     % now split into ~50px windows
-    wWid = 20;
     numWindows = floor(length(bar1)/wWid);
     
     R = reshape(1:floor(length(bar1)/numWindows)*numWindows,floor(length(bar1)/numWindows),[]);
-%     s = RandStream('mlfg6331_64'); 
+     
     
     NN = 1000;
     pccScore = zeros(1,NN);

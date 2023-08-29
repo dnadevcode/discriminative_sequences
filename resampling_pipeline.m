@@ -51,7 +51,7 @@ theoryStruct = [theoryStruct; theoryStructNew];
 %% compare and get discriminative stuff
 
 barGenRun = bgAll(1);
-w = 500;
+w = [200:50:650];
 [rezMax,bestBarStretch,bestLength,rezOut] = local_alignment_assembly(theoryStruct, barGenRun,w);
 
 
@@ -72,15 +72,46 @@ idx1 = selRef;
 quick_visual_plot(1,refNums{selRef}(idx),barGenRun,rezMax,bestBarStretch,theoryStruct)
 super_quick_plot(1,barGenRun,rezOut{1},theoryStruct)
 %% super_quick_plot_mp
-
-
 import Core.plot_match_simple;
 % [f] = plot_match_simple(barStruct, oS,curSink,curSource);
 [f] = plot_match_simple([barGenRun(selRef) barcodeGenT],rezOut{2}, 1, refNums{selRef}(idx)+1);
 
-import Core.plot_match_pcc;
-[sortedValsIs, sortedIdsIs,pscoresIs] = sorted_scores(oSIslands);
+%%
+barGenRun = bgAll(5);
+w = [200:50:sum(barGenRun{1}.rawBitmask)];
+[rezMax,bestBarStretch,bestLength,rezOut] = local_alignment_assembly(theoryStruct, barGenRun,w);
 
+
+% import Core.plot_match_pcc;
+% [sortedValsIs, sortedIdsIs,pscoresIs] = sorted_scores(oSIslands);
+
+stdVals = zeros(1,length(rezOut)-1);
+for k=2:length(rezOut)
+    pccScore = block_bootstrapping([barGenRun(selRef) barcodeGenT],rezOut{k},1, refNums{selRef}(idx)+1);
+    stdVals(k-1) = mean( pccScore) - 3*std(pccScore);
+end
+
+% figure,plot(w,stdVals)
+% xlabel('window width (w)')
+% ylabel('mu-3sigma best barcode bootstrapping')
+
+
+%second best
+stdVals2 = zeros(1,length(rezOut)-1);
+for k=2:length(rezOut)
+    pccScore2 = block_bootstrapping([barGenRun(selRef) barcodeGenT],rezOut{k},1, refNums{selRef}(idx)+2);
+    stdVals2(k-1) = mean( pccScore2) + 3*std(pccScore2);
+end
+
+% figure,plot(w,stdVals2)
+% xlabel('window width (w)')
+% ylabel('mu+3sigma 2nd best bootstrapping')
+
+
+score = stdVals - stdVals2;
+figure,plot(w,score)
+xlabel('window width (w)')
+ylabel('$score = (\mu-3\sigma)_{best} -(\mu+3\sigma)_{2ndbest}$','Interpreter','latex')
 
 %%
 tic
