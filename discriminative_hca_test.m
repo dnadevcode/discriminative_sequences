@@ -1,10 +1,10 @@
 
 % Should run this for global and local alignment
 
-addpath(genpath('/home/etlar/albertas/reps/lldev'))
-addpath(genpath('/home/etlar/albertas/reps/hca'))
-addpath(genpath('/home/etlar/albertas/reps/bargroupingprototype'))
-addpath(genpath('/home/etlar/albertas/reps/discriminative_sequences'))
+addpath(genpath('/home/avesta/albertas/reps/lldev'))
+addpath(genpath('/home/avesta/albertas/reps/hca'))
+addpath(genpath('/home/avesta/albertas/reps/bargroupingprototype'))
+addpath(genpath('/home/avesta/albertas/reps/discriminative_sequences'))
 
 addpath('/export/scratch/albertas/data_temp/bargrouping/ecoli/FASTAS/')
 addpath(genpath('/proj/snic2022-5-384/users/x_albdv/data/bargrouping/ecoli/FASTAS/'))
@@ -22,7 +22,7 @@ fastaFiles(1:length(bG)) = 1;
 
 lens = cellfun(@(x) length(x.rawBarcode),bgAll)
 nmbp = 0.22;
-bgsel = bgAll(find(lens>500));
+bgsel = bgAll(find(lens>300));
 
 %% theory loading
 
@@ -32,7 +32,7 @@ thryFileIdx = 1; % todo: pass directly the theory file here
 
 %%
 
-barGenRun = bgsel(3);
+barGenRun = bgsel(1);
 
 w = [];
 [rezMax,bestBarStretch,bestLength,rezOut] = local_alignment_assembly(theoryStruct, barGenRun,w);
@@ -152,4 +152,4 @@ end
 
 
     %%
-    figure,histogram(cellfun(@(x) std(x.rawBarcode),bgAll)./cellfun(@(x) nanmean(std(x.alignedKymo)),bgAll))
+    figure,histogram(cellfun(@(x) std(x.rawBarcode),bgAll)./cellfun(@(x) nanmean(std(x.alignedKymo(:,round(end/2-10:end/2+10)))),bgAll))

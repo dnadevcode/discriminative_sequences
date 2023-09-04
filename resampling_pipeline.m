@@ -5,10 +5,10 @@
 
 % Should run this for global and local alignment
 
-addpath(genpath('/home/etlar/albertas/reps/lldev'))
-addpath(genpath('/home/etlar/albertas/reps/hca'))
-addpath(genpath('/home/etlar/albertas/reps/bargroupingprototype'))
-addpath(genpath('/home/etlar/albertas/reps/discriminative_sequences'))
+addpath(genpath('/home/avesta/albertas/reps/lldev'))
+addpath(genpath('/home/avesta/albertas/reps/hca'))
+addpath(genpath('/home/avesta/albertas/reps/bargroupingprototype'))
+addpath(genpath('/home/avesta/albertas/reps/discriminative_sequences'))
 
 addpath('/export/scratch/albertas/data_temp/bargrouping/ecoli/FASTAS/')
 addpath(genpath('/proj/snic2022-5-384/users/x_albdv/data/bargrouping/ecoli/FASTAS/'))
