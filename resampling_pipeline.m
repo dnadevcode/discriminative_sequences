@@ -21,7 +21,7 @@ import Core.load_chrom_data;
 [bgAll, bG, kymoStructs] = load_chrom_data('/export/scratch/albertas/data_temp/bargrouping_selected/ecoli_1/sample_2/');
 fastaFiles(1:length(bG)) = 1;
 
-nmbp = 0.225;
+nmbp = 0.25;
 
 %% theory loading
 
@@ -41,7 +41,7 @@ fastas = {'018_final_polish.fasta','DA32087.fasta'};
 fastaFiles = 1:2;
 
 % if for all nm/bp values
-nmbpvals = 0.225; % should use mpMax to get this "fully" correct
+nmbpvals = 0.25; % should use mpMax to get this "fully" correct
 [theoryStructNew,~,barcodeGenT] = gen_theoretical(fastas(fastaFiles),nmbpvals,0,nmPerPx); %todo faster: length rscale instead of calculating each time. also this can be done in outside loop. also make it into struct so don't need to load it here and manipulate theory directly
 
 %% add new theory to the end
@@ -50,7 +50,7 @@ theoryStruct = [theoryStruct; theoryStructNew];
 % theoryStruct = theoryStructNew
 %% compare and get discriminative stuff
 
-barGenRun = bgAll(1);
+barGenRun = bgAll(1:10);%(1);
 w = [];
 [rezMax,bestBarStretch,bestLength,rezOut] = local_alignment_assembly(theoryStruct, barGenRun,w);
 
@@ -63,14 +63,14 @@ import Core.discrim_true_positives;
 [truePositives,discSpecies,discAll,allSpecies,refNums,signMatch] =...
 discrim_true_positives(rezOut{idx}.rezMax,speciesLevel,idc);
 
-{theoryStruct([refNums{1}]).name}'
+{theoryStruct([refNums{4}]).name}'
 
 %% visualize the best result
-selRef = 1;
+selRef = 5;
 idx = 1;
 idx1 = selRef;
 quick_visual_plot(1,refNums{selRef}(idx),barGenRun,rezMax,bestBarStretch,theoryStruct)
-super_quick_plot(1,barGenRun,rezOut{1},theoryStruct)
+super_quick_plot(5,barGenRun,rezOut{1},theoryStruct)
 %% super_quick_plot_mp
 import Core.plot_match_simple;
 % [f] = plot_match_simple(barStruct, oS,curSink,curSource);
