@@ -13,10 +13,12 @@ addpath('/export/scratch/albertas/data_temp/bargrouping/ecoli/FASTAS/')
 addpath(genpath('/proj/snic2022-5-384/users/x_albdv/data/bargrouping/ecoli/FASTAS/'))
 
 
-dirName = 'C:\Users\Lenovo\postdoc\DATA\bargrouping\local\local_alignment\local_alignment';
+%dirName = 'C:\Users\Lenovo\postdoc\DATA\bargrouping\local\local_alignment\local_alignment';
+dirName = '/export/scratch/albertas/data_temp/bargrouping/local_results_from_tetralith/'; % work pc%
 import Core.load_data_fun;
-[kymoStructs,barGen,sets] = load_data_fun(dirName,1);
+[kymoStructs,barGen,sets] = load_data_fun(dirName,2);
 
+curDirKymos = sets.dirName; % current directory with kymographs
 
 nmbp = sets.nmbp;
 
@@ -26,48 +28,93 @@ import Core.load_theory_structure;
 thryFileIdx = 2; % todo: pass directly the theory file here
 [theoryStruct,sets] = load_theory_structure(nmbp,thryFileIdx);
 
-%%
-
-barGenRun = barGen(1);%(1);
-w = [];
-[rezMax, bestBarStretch, bestLength, rezOut] = local_alignment_assembly(theoryStruct, barGenRun,w);
-
 
 import Core.extract_species_name;
 [speciesLevel,idc] = extract_species_name(theoryStruct);
-% 
-idx = 1;
-import Core.discrim_true_positives;
-[truePositives,discSpecies,discAll,allSpecies,refNums,signMatch] =...
-discrim_true_positives(rezOut{idx}.rezMax,speciesLevel,idc);
+%
 
-{theoryStruct([refNums{1}]).name}'
+%% Run alignment, if it has not been run yet
+
+barGenRun = barGen(1);
+% w = [];
+% [rezMax, bestBarStretch, bestLength, rezOut] = local_alignment_assembly(theoryStruct, barGenRun,w);
+
+%  
+% idx = 1;
+% import Core.discrim_true_positives;
+% [truePositives,discSpecies,discAll,allSpecies,refNums,signMatch] =...
+% discrim_true_positives(rezOut{idx}.rezMax,speciesLevel,idc);
+% 
+% {theoryStruct([refNums{1}]).name}'
 
 
 %%
 
-foldCalc = 'C:\Users\Lenovo\postdoc\DATA\bargrouping\local\local_alignment\local_alignment\EC6_Ecoli_DA65808';
-foldCalc = 'C:\Users\Lenovo\postdoc\DATA\bargrouping\local\local_alignment\local_alignment\EC15_Ecoli_DA65783';
+% foldCalc = 'C:\Users\Lenovo\postdoc\DATA\bargrouping\local\local_alignment\local_alignment\EC6_Ecoli_DA65808';
+% foldCalc = 'C:\Users\Lenovo\postdoc\DATA\bargrouping\local\local_alignment\local_alignment\EC15_Ecoli_DA65783';
 
-files = dir(fullfile(foldCalc,'*.dat'));
-
-% mpid = zeros(1,length(files));
-for i=1:length(files)
-    f1= strsplit(files(i).name,'w=');
-    if length(f1) == 1
-        mppc = i;
-    else
-        f2 = strsplit(f1{2},'_');
-        mpval(i) = str2num(f2{1});
-    end
-end
+% load alignment result to result struct if it was saves as text files
+import Core.load_local_alignment_results_from_files;
+[rM, bnames, mpval] = load_local_alignment_results_from_files(curDirKymos ); 
 
 
-for i=1:length(files)
-    [rM{i},bnames{i}] = Core.load_coefs(fullfile(files(i).folder,files(i).name));
-end
+%% now run re-sampling procedure
 
-% extract how many scores for each barcode..    
+m = 10; % which length to analyse
+% Step 1 : find the best scoring theory for each barcode  
+import Core.disc_locs;
+[refNums, allNums, bestCoefs,refNumBad, bestCoefsBad] = disc_locs(rM{m});
+
+% intermediate step, check if this barcode is within the output struc
+% (depeends on its length)
+[barsPassThresh,locb] = ismember(cellfun(@(x) matlab.lang.makeValidName(strrep(x.name,'.tif','')),barGenRun,'un',false),bnames{m});
+
+% Step 2 : recalculate (if needed) best alignment against theory. Useful to check
+% that the alignment was correct. Not needed if rezults is saved as mat
+% file
+
+theoryStructSel = theoryStruct(refNums{locb}(1)); % against the same theory, but we don't know which is correct! so we calcualte it for each length separately
+% barGenRun = barGen(1);
+% w = [200:50:sum(barGenRun{1}.rawBitmask)]; % in practice could run all
+[rezOutRecalc] = local_alignment_assembly(theoryStructSel, barGenRun,mpval(m));
+
+%     super_quick_plot(1,barGenRun,rezOutRecalc{1},theoryStructSel)
+%% super_quick_plot_mp 
+% import Core.plot_match_simple;
+% % [f] = plot_match_simple(barStruct, oS,curSink,curSource);
+% [f] = plot_match_simple([barGenRun(selRef) barcodeGenT],rezOut{2}, 1, refNums{selRef}(idx)+1);
+% 
+
+% Step 3 : block bootstrapping
+pccScore = block_bootstrapping(barGenRun, theoryStructSel,rezOutRecalc{1},1, 2,mpval(m));
+
+stdVals(k-1) = mean( pccScore) - 3*std(pccScore);
+
+%%
+
+
+[scores,pccScore] = local_bootstrap_run( barGen(4),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
+scores
+
+figure,plot(mpval,scores(:,1)-3*(scores(:,2)),'redx')
+xlabel('Overlap window width');
+ylabel('$CC_{max}$ -3$\sigma_{bootstrapped}$','Interpreter','latex')
+
+
+% local_bootstrap_run(barGenRun,rM,bnames,theoryStruct,mpval )
+% 
+% stdVals = zeros(1,length(rezOut)-1);
+% for k=2:length(rezOut)
+%  
+%     barcodeGenTStruct = struct('rawBarcode',theoryStructNew(1).rawBarcode,'rawBitmask',true(1,length(theoryStructNew(1).rawBarcode)));
+% 
+%     pccScore = block_bootstrapping([barGenRunStruct(selRef) barcodeGenTStruct(1)],rezOut1{k},1, 2);
+%     stdVals(k-1) = mean( pccScore) - 3*std(pccScore);
+% end
+
+
+
+
 import Core.discrim_true_positives;
 pos = zeros(1,length(files));
 for i=1:length(files)
@@ -75,6 +122,30 @@ for i=1:length(files)
         discrim_true_positives(rM{i}, speciesLevel, idc);
     pos(i) = length(cell2mat(refNumsMP));
 end
+
+
+%
+
+theoryStructSel = theoryStruct(refNums{1}(1));
+barGenRun = bgAll(1);
+w = [200:50:sum(barGenRun{1}.rawBitmask)];
+[rezMax, bestBarStretch, bestLength, rezOut1] = local_alignment_assembly(theoryStructSel, barGenRun,w);
+
+theoryStructSel2 = theoryStruct(refNums{1}(2:end));
+[rezMax2, bestBarStretch2, bestLength2, rezOut2] = local_alignment_assembly(theoryStructSel2, barGenRun,w);
+
+%
+ barGenRunStruct = cell2struct([cellfun(@(x) double(x.rawBarcode),barGenRun,'un',false);...
+        cellfun(@(x) x.rawBitmask,barGenRun,'un',false)]',{'rawBarcode','rawBitmask'},2);
+% import Core.plot_match_pcc;
+% [sortedValsIs, sortedIdsIs,pscoresIs] = sorted_scores(oSIslands);
+
+
+
+
+%% Other things
+
+
 
 
 filesMP = {'210901_Sample2_110nmPERpx_0.200nmPERbp_MP_w=400_table_2023-06-29_13_18_54.txt'};
