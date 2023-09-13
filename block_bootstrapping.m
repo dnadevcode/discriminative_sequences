@@ -32,7 +32,7 @@ function [pccScore] = block_bootstrapping(b1,bT,overlapStruct,k,iy, wLocal, wBoo
         bar1 = interp1(barStruct(1).rawBarcode, linspace(1,lenBarTested,lenBarTested*overlapStruct.bestBarStretch{1}));
         barB = barStruct(1).rawBitmask(round(linspace(1,lenBarTested,lenBarTested*overlapStruct.bestBarStretch{1})));
         
-        if overlapStruct.rezMax{1}{1}.or == 2
+        if overlapStruct.rezMax{1}{1}.or(1) == 2
             bar1 = fliplr(bar1);
         end
         bar1 = bar1(barB);
@@ -51,7 +51,7 @@ function [pccScore] = block_bootstrapping(b1,bT,overlapStruct,k,iy, wLocal, wBoo
 % figure,plot(zscore(bar1,1));
 % hold on
 % plot(zscore(bar2,1))
-%     
+% %     
     
     % now split into ~50px windows. skips the last window if not divisible
     numWindows = floor(length(bar1)/wBoostrapping);
@@ -65,7 +65,7 @@ function [pccScore] = block_bootstrapping(b1,bT,overlapStruct,k,iy, wLocal, wBoo
         y = datasample(s,1:numWindows,numWindows,'Replace',true);
         b1 = bar1(R(:,y));
         b2 = bar2(R(:,y));
-        pccScore(i) = zscore(b1(:)')*zscore(b2(:))/length(b1(:));
+        pccScore(i) = zscore(b1(:)',1)*zscore(b2(:),1)/length(b1(:)); % todo: speed up by pre-calculating the residuals and only scale by mean
     
     end
 

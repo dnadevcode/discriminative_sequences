@@ -42,7 +42,7 @@ function [rezOut] = local_alignment_assembly(theoryStruct, barGen, w, sets)
     
     for wIdx = 1:length(w)
         sets.w = w(wIdx);
-        passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask), barGen) >= sets.w); % which barcodes are long enough?
+        passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask)*sets.theory.stretchFactors(end), barGen) >= sets.w); % which barcodes are long enough?
     
         %
         if sets.w == 0

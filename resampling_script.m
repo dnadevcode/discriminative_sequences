@@ -16,7 +16,7 @@ addpath(genpath('/proj/snic2022-5-384/users/x_albdv/data/bargrouping/ecoli/FASTA
 %dirName = 'C:\Users\Lenovo\postdoc\DATA\bargrouping\local\local_alignment\local_alignment';
 dirName = '/export/scratch/albertas/data_temp/bargrouping/local_results_from_tetralith/'; % work pc%
 import Core.load_data_fun;
-[kymoStructs,barGen,sets] = load_data_fun(dirName,2);
+[kymoStructs,barGen,sets] = load_data_fun(dirName,5);
 
 curDirKymos = sets.dirName; % current directory with kymographs
 
@@ -25,7 +25,7 @@ nmbp = sets.nmbp;
 %% theory loading
 
 import Core.load_theory_structure;
-thryFileIdx = 2; % todo: pass directly the theory file here
+thryFileIdx = 1; % todo: pass directly the theory file here
 [theoryStruct,sets] = load_theory_structure(nmbp,thryFileIdx);
 
 
@@ -59,6 +59,21 @@ import Core.load_local_alignment_results_from_files;
 
 
 %% now run re-sampling procedure
+% [scores,pccScore] = local_bootstrap_run( barGen(1),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
+timestamp = datestr(clock(), 'yyyy-mm-dd_HH_MM_SS');
+
+scores = cell(1,length(barGen));
+
+for ii=1:length(barGen)
+    [scores{ii},pccScore] = local_bootstrap_run( barGen(ii),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
+    scores{ii}
+    
+    % output:
+    import Core.export_coefs_resampling;
+    T = export_coefs_resampling(scores{ii}, barGen(ii), mpval, [curDirKymos, '_resampling_table'],timestamp);
+end
+
+%% same individually
 
 m = 10; % which length to analyse
 % Step 1 : find the best scoring theory for each barcode  
@@ -93,13 +108,13 @@ stdVals(k-1) = mean( pccScore) - 3*std(pccScore);
 %%
 
 
-[scores,pccScore] = local_bootstrap_run( barGen(4),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
-scores
 
 figure,plot(mpval,scores(:,1)-3*(scores(:,2)),'redx')
 xlabel('Overlap window width');
+
 ylabel('$CC_{max}$ -3$\sigma_{bootstrapped}$','Interpreter','latex')
 
+%% 
 
 % local_bootstrap_run(barGenRun,rM,bnames,theoryStruct,mpval )
 % 
