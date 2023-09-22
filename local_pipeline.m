@@ -165,7 +165,9 @@ import CBT.Hca.Core.Comparison.compare_distance;
 
 for wIdx = 1:length(windowWidths)
     sets.w = windowWidths(wIdx);
-    passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask),barGen) >= sets.w);
+    % only local lengths for which all length re-scaled versions passes the
+    % threshold
+    passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask),barGen)*sets.theory.stretchFactors(1) >= sets.w);
 
     % assign standard scores
 %     rezMaxMP = rezMax;
