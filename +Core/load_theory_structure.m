@@ -3,7 +3,7 @@ function [theoryStruct,sets] = load_theory_structure(nmbp, thryFileIdx,selected)
 
 sets.dirName = 'output';
 sets.nmbp = nmbp;
-thryFiles = [dir('/export/scratch/albertas/data_temp/bargrouping/New Ref-Theory files May 2022/*.mat'),dir('C:\Users\Lenovo\postdoc\DATA\bargrouping\*.mat'),dir('/export/scratch/albertas/data_temp/bargrouping/New Ref-Theory files May 2022/*.mat')];
+thryFiles = [dir('/export/scratch/albertas/data_temp/bargrouping/New Ref-Theory files May 2022/*.mat'),dir('C:\Users\Lenovo\postdoc\DATA\bargrouping\*.mat'),dir('/proj/snic2022-5-384/users/x_albdv/data/CHR/New Ref-Theory files May 2022/*.mat')];
 % thryFileIdx = 1;
 % thryFileIdx = find(arrayfun(@(x) ~isempty(strfind(thryFiles(x).name,spltName{end-1})),1:length(thryFiles)));
 sets.thryFile = fullfile(thryFiles(thryFileIdx).folder,thryFiles(thryFileIdx).name);
