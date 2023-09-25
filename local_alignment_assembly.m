@@ -11,6 +11,15 @@ function [rezOut] = local_alignment_assembly(theoryStruct, barGen, w, sets)
     %       rezOut - output results structure (which then could be saved to
     %       a txt file
 
+    if isempty(theoryStruct)
+        nmbp = 0.25;
+        %% theory loading
+        
+        import Core.load_theory_structure;
+        thryFileIdx = 1; % todo: pass directly the theory file here
+        [theoryStruct,sets] = load_theory_structure(nmbp,thryFileIdx);
+
+    end
 
     if nargin < 4
         % we following "Strain-level bacterial typing directly from patient
