@@ -1,8 +1,10 @@
-function [rezMax,barnames] = load_coefs(coefdata)
+function [rezMax, barnames, thryNames] = load_coefs(coefdata)
 
     data = importdata(coefdata);
 
     barnames = data.textdata(1,2:4:end);
+
+    thryNames = data.textdata(2:end,1);
 
     % slow
     tic

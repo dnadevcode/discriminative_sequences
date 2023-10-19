@@ -1,4 +1,4 @@
-function [rM,bnames,mpval] = load_local_alignment_results_from_files(foldCalc)
+function [rM,bnames,mpval,thryNames] = load_local_alignment_results_from_files(foldCalc)
     %   load_local_alignment_results_from_files
     %   
     %   Args:
@@ -9,7 +9,7 @@ function [rM,bnames,mpval] = load_local_alignment_results_from_files(foldCalc)
     %       bnames - barcodes in the curren results struct
     %       mpval - lengths of local alignments, 0 - full alignment.
 
-    files = dir(fullfile(foldCalc,'..','*.dat'));
+    files = dir(fullfile(foldCalc,'..','*.txt'));
     
     
     N = length(files);
@@ -29,7 +29,7 @@ function [rM,bnames,mpval] = load_local_alignment_results_from_files(foldCalc)
     % in case output structure changes (i.e. different number of outputs,
     % format, change load_coefs accordingly).
     for i=1:N
-        [rM{i},bnames{i}] = Core.load_coefs(fullfile(files(i).folder,files(i).name));
+        [rM{i},bnames{i},thryNames{i}] = Core.load_coefs(fullfile(files(i).folder,files(i).name));
     end
 
 end

@@ -1,11 +1,13 @@
-function [speciesLevel,idc] = extract_species_name(theoryStruct,namesSpecies)
+function [speciesLevel,idc] = extract_species_name(theoryStruct,namesSpecies,names)
 
 if nargin < 2
     namesSpecies = {'Escherichia','Shigella'};
 end
 
+if nargin < 3
 % names = [theoryStruct(1:10).name];
-names = arrayfun(@(x) theoryStruct(x).name,1:length(theoryStruct),'un',false);
+    names = arrayfun(@(x) theoryStruct(x).name,1:length(theoryStruct),'un',false);
+end
 
 speciesLevel = zeros(1,length(names));
 for i=1:length(namesSpecies);
@@ -16,7 +18,7 @@ end
 
 if nargout > 1
     % also return unique identifiers for each species
-    species = arrayfun(@(x) strsplit(theoryStruct(x).name,' '),1:length(theoryStruct),'un',false);
+    species = arrayfun(@(x) strsplit(names{x},' '),1:length(names),'un',false);
     species = cellfun(@(x) x{2},species,'un',false);
     % cellfun(@(x) unique(x))
     [uc, ~, idc] = unique( species ) ;

@@ -35,6 +35,7 @@ dirStruct(ismember( {dirStruct.name}, {'.', '..'})) = [];  %remove . and ..
 if depth == 1
     subDir = dir(fullfile(dirStruct(ix).folder,dirStruct(ix).name));
     subDir(ismember( {subDir.name}, {'.', '..'})) = [];  %remove . and ..
+    subDir(find(~cell2mat({subDir.isdir}))) = [];
 else
     subDir = dirStruct(ix);
 end
@@ -167,8 +168,13 @@ for wIdx = 1:length(windowWidths)
     sets.w = windowWidths(wIdx);
     % only local lengths for which all length re-scaled versions passes the
     % threshold
-    passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask),barGen)*sets.theory.stretchFactors(1) >= sets.w);
+    passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask),barGen)*sets.theory.stretchFactors(end) >= sets.w);
 
+    if sets.w == 0
+        sets.comparisonMethod = 'mass_pcc';
+    else
+        sets.comparisonMethod = 'mpnan';
+    end
     % assign standard scores
 %     rezMaxMP = rezMax;
 %     bestBarStretchMP = bestBarStretch;
