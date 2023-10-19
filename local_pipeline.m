@@ -83,7 +83,7 @@ sets.edgeDetectionSettings.method = 'Otsu';
 import Core.load_kymo_data;
 [kymoStructs,barGen] = load_kymo_data(sets);
 
-save([sets.dirName, 'bars.mat'],'barGen','sets');
+save([sets.dirName, 'bars.mat'],'barGen','kymoStructs','sets');
 
 % figure,tiledlayout(ceil(sqrt(length(kymoStructs))),ceil(length(kymoStructs)/sqrt(length(kymoStructs))),'TileSpacing','none','Padding','none')
 % for i=1:length(kymoStructs)

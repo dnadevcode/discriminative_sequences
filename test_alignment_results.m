@@ -38,8 +38,17 @@ import Core.discrim_true_positives;
  [truePositivesMP,discSpeciesMP,discAllMP,allNumsMP,refNumsMP,signMatchMP, fpMP,positives] = ...
     discrim_true_positives(rM{ix}, speciesLevel, idc);
 
-{theoryStruct([cell2mat(refNumsMP(12))]).name}'
+thryNames{ix}([cell2mat(refNumsMP(2))])
 
 
 
 [length(refNums{1}) positives(1)]
+
+%%
+thryNames
+
+import Core.Default.read_default_sets;
+hcaSets = read_default_sets('shrinksortersets.txt');
+
+import Core.shrink_finder_fun;
+[kymoStructsUpdated,kymoKeep] = shrink_finder_fun( hcaSets, kymoStructs, 0)
