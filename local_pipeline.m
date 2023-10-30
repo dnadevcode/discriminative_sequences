@@ -16,7 +16,7 @@ if nargin < 3
 end
 % folds
 % directory name
-thryFiles = dir('/proj/snic2022-5-384/users/x_albdv/data/CHR/New Ref-Theory files May 2022/*.mat');
+thryFiles = [dir('/proj/snic2022-5-384/users/x_albdv/data/CHR/New Ref-Theory files May 2022/*.mat'),dir('/export/scratch/albertas/data_temp/bargrouping/New Ref-Theory files May 2022/*.mat')];
 
 if nargin < 2
     dirName = '/proj/snic2022-5-384/users/x_albdv/data/bargrouping/local/';

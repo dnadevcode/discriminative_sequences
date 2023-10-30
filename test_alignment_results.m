@@ -24,7 +24,7 @@ import Core.load_theory_structure;
 % [theoryStruct,sets] = load_theory_structure(0.225,thryFileIdx);
 
 
-ix =4;
+ix = 1;
 import Core.extract_species_name;
 [speciesLevel,idc] = extract_species_name([],{'Streptococcus pyogenes'},thryNames{ix}');
 %
