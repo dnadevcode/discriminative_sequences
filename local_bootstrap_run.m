@@ -14,7 +14,7 @@ for m = 1:N % which length to analyse
     import Core.disc_locs;
     [refNums, allNums, bestCoefs,refNumBad, bestCoefsBad] = disc_locs(rM{m});
 
-%     % convert bestCoefs to p-values ?
+%     % convert bestCoefs to p-values/zscores
     lengthsbar = sum(barGenRun{1}.rawBitmask);
 %     
 %     % pvalue params. should change based on psf
@@ -58,8 +58,16 @@ for m = 1:N % which length to analyse
         % w = [200:50:sum(barGenRun{1}.rawBitmask)]; % in practice could run all
         [rezOutRecalc] = local_alignment_assembly(theoryStructSel, barGenRun,mpval(m));
     
+        %
+
+
         % Step 3 : block bootstrapping
-        pccScore{m} = block_bootstrapping(barGenRun, theoryStructSel,rezOutRecalc{1},1, 2,mpval(m));
+        [pccScore{m}, bar1, bar2] = block_bootstrapping(barGenRun, theoryStructSel,rezOutRecalc{1},1, 2,mpval(m));
+%         figure,plot(zscore(bar1,1));
+%         hold on
+%         plot(zscore(bar2,1))
+% %     
+
     
         
         pval = arrayfun(@(x) 1-beta_ev_cdf(x, nuF*rM{m}{refNums{locb}(1)}{locb}.lengthMatch, 1, 2*max(lengthsbar, theoryStruct(refNums{locb}(1)).length),0),pccScore{m});

@@ -1,4 +1,4 @@
-function [pccScore] = block_bootstrapping(b1,bT,overlapStruct,k,iy, wLocal, wBoostrapping,s)
+function [pccScore,bar1,bar2] = block_bootstrapping(b1,bT,overlapStruct,k,iy, wLocal, wBoostrapping,s)
     % block_bootstrapping including mp
     %
     %   Args:
