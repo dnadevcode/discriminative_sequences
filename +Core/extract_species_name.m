@@ -19,7 +19,9 @@ end
 if nargout > 1
     % also return unique identifiers for each species
     species = arrayfun(@(x) strsplit(names{x},' '),1:length(names),'un',false);
-    species = cellfun(@(x) x{2},species,'un',false);
+%     species = cellfun(@(x) x{2},species,'un',false);
+    species = cellfun(@(x) [x{2},' ',x{3}],species,'un',false);
+
     % cellfun(@(x) unique(x))
     [uc, ~, idc] = unique( species ) ;
 end

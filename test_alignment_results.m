@@ -16,8 +16,9 @@ addpath(genpath([pathMain,'discriminative_sequences']))
 % curDirKymos = '/proj/snic2022-5-384/users/x_albdv/data/bargrouping/local_Pyogenes/sample365/20220121_Sample 365-st1_110nm_0.225nmPERbp/';
 
 curDirKymos = '/proj/snic2022-5-384/users/x_albdv/data/bargrouping/test/sample365/20220121_Sample365-st1_110nm_0.225nmPERbp/';
+
 import Core.load_local_alignment_results_from_files;
-[rM, bnames, mpval,thryNames] = load_local_alignment_results_from_files(curDirKymos ); 
+[rM, bnames, mpval,thryNames,files] = load_local_alignment_results_from_files(curDirKymos ); 
 
 % Alternative: use MAT Files
 
@@ -35,8 +36,13 @@ import Core.extract_species_name;
 [speciesLevel,idc] = extract_species_name([],{'Streptococcus pyogenes'},thryNames{ix}');
 %
 
+% import Core.Discriminative.extract_species_name;
+% [uniqueSpeciesNames,idSpecies] = Core.Discriminative.extract_species_name(thryNames);
+
+
 import Core.disc_locs;
 [refNums, allNums, bestCoefs,refNumBad, bestCoefsBad] = disc_locs(rM{ix});
+% thryNames{ix}([cell2mat(refNums(11))])
 
 
     % calcs ref and allnums again..
@@ -50,7 +56,7 @@ thryNames{ix}([cell2mat(refNumsMP(2))])
 
 [length(refNums{1}) positives(1)]
 
-%% Alternative: new
+%% Alternative: new, creates an output table
 
 import Core.Default.read_default_sets;
 hcaSets = read_default_sets('hcaalignmentsets.txt');
@@ -64,5 +70,46 @@ import Core.identify_discriminative;
 
 thryNames
 
+%% Try to do resampling plot as well
+
+% resampling_script_fun('/export/scratch/albertas/data_temp/bargrouping/local_Test/',1)
+
+
+scores = cell(1,length(barGen));
+
+for ii=1:length(barGen)
+    [scores{ii},pccScore] = local_bootstrap_run( barGen(ii),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
+
+end
+% [scores,pccScore] = local_bootstrap_run( barGen(ii),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
+
+    
+    for ii=1:length(barGen)
+        scores{ii}
+        
+        % output:
+        import Core.export_coefs_resampling;
+        T = export_coefs_resampling(scores{ii}, barGen(ii), mpval, [curDirKymos, '_resampling_table'],timestamp);
+    
+        save( [curDirKymos, '_resampling_table.mat'],'T');
+    end
+
+
+
+%% plot
+
+
+import Core.load_theory_structure;
+thryFileIdx = 1; % todo: only pass single
+[theoryStruct,sets] = load_theory_structure(0.169,thryFileIdx);
+
+import CBT.Hca.UI.Helper.plot_any_bar;
+ix = 11;
+thrIx = 8;
+plot_any_bar(ix,barGen,rezMaxMP,theoryStruct,refNums{ix}(thrIx));
+%%
+
+
+% shrink?
 % import Core.shrink_finder_fun;
 % [kymoStructsUpdated,kymoKeep] = shrink_finder_fun( hcaSets, kymoStructs, 0)

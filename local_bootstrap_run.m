@@ -43,10 +43,6 @@ for m = 1:N % which length to analyse
         % p-value for highest coef
         import Zeromodel.beta_ev_cdf;
         nuF = 0.05; % should be tuned based on synthetic data? Depends a bit on pdf
-%         pvalAll = zeros(1,length(bestCoefs{locb}));
-%         for i=1:length(bestCoefs{locb})
-%             pvalAll(i) = 1-beta_ev_cdf(bestCoefs{locb}(i), nuF*rM{m}{refNums{locb}(i)}{locb}.lengthMatch, 1, 2*max(lengthsbar, theoryStruct(refNums{locb}(i)).length),1);
-%         end
         pval1 = 1-beta_ev_cdf(bestCoefs{locb}(1), nuF*rM{m}{refNums{locb}(1)}{locb}.lengthMatch, 1, 2*max(lengthsbar, theoryStruct(refNums{locb}(1)).length),1);
 
         

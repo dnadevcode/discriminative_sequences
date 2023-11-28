@@ -1,4 +1,4 @@
-function [rM,bnames,mpval,thryNames] = load_local_alignment_results_from_files(foldCalc)
+function [rM,bnames,mpval,thryNames,files] = load_local_alignment_results_from_files(foldCalc)
     %   load_local_alignment_results_from_files
     %   
     %   Args:
