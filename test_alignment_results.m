@@ -1,3 +1,7 @@
+% test alignment results
+%
+%   Load any alignment file.
+
 
 pathMain = '/proj/snic2022-5-384/users/x_albdv/reps/';% reps.
 
@@ -14,6 +18,8 @@ addpath(genpath([pathMain,'discriminative_sequences']))
 curDirKymos = '/proj/snic2022-5-384/users/x_albdv/data/bargrouping/test/sample365/20220121_Sample365-st1_110nm_0.225nmPERbp/';
 import Core.load_local_alignment_results_from_files;
 [rM, bnames, mpval,thryNames] = load_local_alignment_results_from_files(curDirKymos ); 
+
+% Alternative: use MAT Files
 
 
 
@@ -44,11 +50,19 @@ thryNames{ix}([cell2mat(refNumsMP(2))])
 
 [length(refNums{1}) positives(1)]
 
-%%
-thryNames
+%% Alternative: new
 
 import Core.Default.read_default_sets;
-hcaSets = read_default_sets('shrinksortersets.txt');
+hcaSets = read_default_sets('hcaalignmentsets.txt');
+hcaSets.default.kymofolder{1} = 'kymo';
+hcaSets.default.timestamp ='test';
+% 
+import Core.identify_discriminative;
+[is_distinct,numMatchingSpecies,uniqueMatchSequences,refNums,refNumBad] =...
+    identify_discriminative(hcaSets.default,barGen,rezMaxMP, thryNames{1});
+    
 
-import Core.shrink_finder_fun;
-[kymoStructsUpdated,kymoKeep] = shrink_finder_fun( hcaSets, kymoStructs, 0)
+thryNames
+
+% import Core.shrink_finder_fun;
+% [kymoStructsUpdated,kymoKeep] = shrink_finder_fun( hcaSets, kymoStructs, 0)
