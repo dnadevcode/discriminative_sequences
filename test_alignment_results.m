@@ -34,6 +34,8 @@ import Core.load_theory_structure;
 ix = 1;
 import Core.extract_species_name;
 [speciesLevel,idc] = extract_species_name([],{'Streptococcus pyogenes'},thryNames{ix}');
+% [speciesLevel,idc] = extract_species_name([],{'Escherichia coli'},thryNames{ix}');
+
 %
 
 % import Core.Discriminative.extract_species_name;
