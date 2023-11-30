@@ -1,3 +1,14 @@
+
+% bootstrapping
+
+scores = cell(1,length(barGen));
+
+for ii=1:length(barGen)
+    [scores{ii},pccScore] = local_bootstrap_run( barGen(ii),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
+
+end
+
+
 % todo: for all data
 import Zeromodel.beta_ev_cdf;
 nuF = 0.1; % should be tuned based on synthetic data? Depends a bit on pdf

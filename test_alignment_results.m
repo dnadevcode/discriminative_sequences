@@ -20,13 +20,40 @@ curDirKymos = '/proj/snic2022-5-384/users/x_albdv/data/bargrouping/test/sample36
 import Core.load_local_alignment_results_from_files;
 [rM, bnames, mpval,thryNames,files] = load_local_alignment_results_from_files(curDirKymos ); 
 
-% Alternative: use MAT Files
-
-
-
-
 
 import Core.load_theory_structure;
+thryFileIdx = 1; % todo: only pass single
+[theoryStruct,sets] = load_theory_structure(0.17,thryFileIdx);
+
+
+% calc stouffer scores
+[rM] = stouffer_zscore(rM,theoryStruct,mpval,0.07);
+f= figure,histogram(cellfun(@(x) x{1}.stoufferScore,rM{2}))
+
+% Alternative: use MAT Files
+%% need barGen
+scores = cell(1,length(barGen));
+
+for ii=1:length(barGen)
+    [scores{ii},pccScore] = local_bootstrap_run( barGen(ii),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
+
+end
+% [scores,pccScore] = local_bootstrap_run( barGen(ii),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
+
+
+for ii=1:length(barGen)
+    scores{ii}
+    
+    % output:
+    import Core.export_coefs_resampling;
+    T = export_coefs_resampling(scores{ii}, barGen(ii), mpval, [curDirKymos, '_resampling_table'],timestamp);
+
+    save( [curDirKymos, '_resampling_table.mat'],'T');
+end
+%%
+
+
+% import Core.load_theory_structure;
 % thryFileIdx = 1; % todo: pass directly the theory file here
 % [theoryStruct,sets] = load_theory_structure(0.225,thryFileIdx);
 
@@ -77,37 +104,16 @@ thryNames
 % resampling_script_fun('/export/scratch/albertas/data_temp/bargrouping/local_Test/',1)
 
 
-scores = cell(1,length(barGen));
-
-for ii=1:length(barGen)
-    [scores{ii},pccScore] = local_bootstrap_run( barGen(ii),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
-
-end
-% [scores,pccScore] = local_bootstrap_run( barGen(ii),rM,bnames,theoryStruct ,mpval,speciesLevel,idc);
-
-    
-    for ii=1:length(barGen)
-        scores{ii}
-        
-        % output:
-        import Core.export_coefs_resampling;
-        T = export_coefs_resampling(scores{ii}, barGen(ii), mpval, [curDirKymos, '_resampling_table'],timestamp);
-    
-        save( [curDirKymos, '_resampling_table.mat'],'T');
-    end
 
 
+test_new_scores
 
 %% plot
 
-
-import Core.load_theory_structure;
-thryFileIdx = 1; % todo: only pass single
-[theoryStruct,sets] = load_theory_structure(0.169,thryFileIdx);
 %%
 import CBT.Hca.UI.Helper.plot_any_bar;
 ix = 1;
-thrIx = 2;
+thrIx = 1;
 plot_any_bar(ix,barGen,rezMaxMP,theoryStruct,refNums{ix}(thrIx));
 %%
 
