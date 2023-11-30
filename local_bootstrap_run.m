@@ -42,7 +42,7 @@ for m = 1:N % which length to analyse
 
         % p-value for highest coef
         import Zeromodel.beta_ev_cdf;
-        nuF = 0.05; % should be tuned based on synthetic data? Depends a bit on pdf
+        nuF = 0.1; % should be tuned based on synthetic data? Depends a bit on pdf
         pval1 = 1-beta_ev_cdf(bestCoefs{locb}(1), nuF*rM{m}{refNums{locb}(1)}{locb}.lengthMatch, 1, 2*max(lengthsbar, theoryStruct(refNums{locb}(1)).length),1);
 
         
@@ -72,7 +72,7 @@ for m = 1:N % which length to analyse
         else
             pval(pval>0.9999999999999) =0.9999999999999;
             pval(pval<10^(-20)) = 10^(-20);
-            match_score = -norminv(pval);
+            match_score = -norminv(pval); % or norminv(1-pval)
         end
 
         scores(m,:) = [mean( pccScore{m}) 3*std(pccScore{m}) length(refNums{locb}) positives(locb) -norminv(pval1) mean(match_score) std(match_score)];

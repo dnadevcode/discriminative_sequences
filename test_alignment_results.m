@@ -104,10 +104,10 @@ end
 import Core.load_theory_structure;
 thryFileIdx = 1; % todo: only pass single
 [theoryStruct,sets] = load_theory_structure(0.169,thryFileIdx);
-
+%%
 import CBT.Hca.UI.Helper.plot_any_bar;
-ix = 11;
-thrIx = 8;
+ix = 1;
+thrIx = 2;
 plot_any_bar(ix,barGen,rezMaxMP,theoryStruct,refNums{ix}(thrIx));
 %%
 
