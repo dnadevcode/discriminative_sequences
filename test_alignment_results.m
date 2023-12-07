@@ -125,3 +125,40 @@ plot_any_bar(ix,barGen,rezMaxMP,theoryStruct,refNums{ix}(thrIx));
 
 
 %% Check alignment results from stouffer/resampled stuff
+
+% isdiscriminative without bargen
+import Core.Default.read_default_sets;
+hcaSets = read_default_sets('hcaalignmentsets.txt');
+hcaSets.default.kymofolder{1} = 'kymo';
+hcaSets.default.timestamp ='test';
+% 
+is_distinct = cell(1,length(rM));
+numMatchingSpecies = cell(1,length(rM));
+uniqueMatchSequences = cell(1,length(rM));
+
+allbars =  bnames{find(mpval==0)};
+
+for i=1:length(rM)
+
+    for j=1:length(bnames{i})
+
+        
+
+    end
+
+%     passingThreshBars = bnames{i};
+%     if length(passingThreshBars)~= length(rM{j}{1})
+%             passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask),bars.barGen)*bars.sets.theory.stretchFactors(end) >= mpval(j));
+%     end
+%     if length(passingThreshBars)~= length(rM{j}{1})
+%         passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask),bars.barGen) >=  mpval(j));
+%     end
+
+
+    import Core.identify_discriminative;
+    [is_distinct{i},numMatchingSpecies{i},uniqueMatchSequences{i},refNums,refNumBad] =...
+        identify_discriminative(hcaSets.default,[],rM{i}, thryNames{i});
+end
+
+%% connect to correct bar
+    
