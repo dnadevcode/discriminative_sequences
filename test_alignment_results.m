@@ -121,3 +121,7 @@ plot_any_bar(ix,barGen,rezMaxMP,theoryStruct,refNums{ix}(thrIx));
 % shrink?
 % import Core.shrink_finder_fun;
 % [kymoStructsUpdated,kymoKeep] = shrink_finder_fun( hcaSets, kymoStructs, 0)
+
+
+
+%% Check alignment results from stouffer/resampled stuff

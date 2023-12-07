@@ -25,10 +25,11 @@ function [rM,bnames,mpval,thryNames,files] = load_local_alignment_results_from_f
     
     rM = cell(1,N);
     bnames = cell(1,N);
+    thryNames = cell(1,N);
     
     % in case output structure changes (i.e. different number of outputs,
     % format, change load_coefs accordingly).
-    for i=1:N
+    parfor i=1:N
         [rM{i},bnames{i},thryNames{i}] = Core.load_coefs(fullfile(files(i).folder,files(i).name));
     end
 
