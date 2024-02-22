@@ -4,16 +4,86 @@ function [] = partial_database_pipeline()
 
 
 
-
+    % loading theory to specific nm/bp
     tic
     import Core.load_theory_structure;
     thryFileIdx = 1; % todo: only pass single
-    [theoryStruct,sets] = load_theory_structure(0.1,thryFileIdx);
+    [theoryStruct,sets] = load_theory_structure(0.05,thryFileIdx);
     toc
+    for i=1:length(theoryStruct)
+        theoryStruct(i).rawBitmask = ones(1,length(  theoryStruct(i).rawBarcode ));
+    end
     % todo: maybe don't add extra psf?
 
-    % Database self-similarity
+    %% Database self-similarity. A bit slow if to run all pairwise. So want to make the theory smaller
+    % comparisons. If we run long vs long, and keep only barcodes with
+    % subbarcodes score < thresh, maybe more accurate?
+    tic
+    [oS] = calc_overlap_mp(theoryStruct(1:50),1, 200, 'test');
+    toc
 
+    vec = [theoryStruct(:).rawBarcode nan];
+    tempCell = cell(1, 2*numel(theoryStruct)-1);
+    tempCell(1:2:end) = {theoryStruct(:).rawBarcode};
+    tempCell(2:2:end) = {NaN};
+    % Concatenate the cell array into a single vector
+    vecConcat = cat(2, tempCell{:});
+
+
+    % convert vec to integers
+    newvec = round((vecConcat-min(vecConcat))/(max(vecConcat)-min(vecConcat))*256);
+%     newvec(isnan(vecConcat)) = nan;
+    writematrix(newvec,'bar.txt','Delimiter',' ')
+%     strjoin([theoryStruct(1:2).rawBarcode])
+w = 200;
+numWorkers = 32;
+       com= strcat(['SCAMP --window=' num2str(w) ' --input_a_file_name='...
+           '/export/scratch/albertas/data_temp/bargrouping/PARTIAL_DB_DATA/bar.txt' ' --num_cpu_workers=' num2str(numWorkers) ' --no_gpu --output_pearson --print_debug_info'...
+           ' --output_a_file_name=' 'bar_mp' ...
+           ' --output_a_index_file_name=' 'bar_index']);
+
+tic
+[a,val ] = system(com);
+toc
+
+fid = fopen('bar_mp');
+raw2 = textscan(fid, '%s ');
+fclose(fid);
+nonanValues = cellfun(@(x) x(1)~='-',raw2{1});
+mp1 = nan(length(nonanValues),1);
+mp1(nonanValues) = sscanf(sprintf(' %s',raw2{1}{nonanValues}),'%f');
+   
+figure,plot(mp1)
+
+
+nanIndices = find(isnan(newvec));
+nanIndices = nanIndices(nanIndices<length(mp1)-w);
+
+pccThresh = 0.9;
+outVec = mp1 < pccThresh;
+% Preallocate cell array to store splitted vectors
+splittedVectors = zeros(1, numel(nanIndices));
+
+% Split the vector based on NaN delimiters
+for i = 1:numel(nanIndices)
+    if i == 1
+        splittedVectors(i) = mean(outVec(1:nanIndices(i)-1));
+    else
+        splittedVectors(i) = mean(outVec(nanIndices(i-1)+1:nanIndices(i)-1));
+    end
+end
+
+% Add the last part of the vector if NaN is not the last element
+if nanIndices(end) ~= numel(outVec)
+    splittedVectors(end+1) = mean(outVec(nanIndices(end)+1:end));
+end
+
+% Repetitive sequences: challenge is which sequence to keep. Maybe have to
+% look into mpI
+
+
+
+       %%
 
     timestamp = datestr(clock(), 'yyyy-mm-dd_HH_MM_SS');
     foldSynth=strcat('output',timestamp);
