@@ -14,13 +14,16 @@ function [] = partial_database_pipeline()
         theoryStruct(i).rawBitmask = ones(1,length(  theoryStruct(i).rawBarcode ));
     end
     % todo: maybe don't add extra psf?
+    w = 200;
 
     %% Database self-similarity. A bit slow if to run all pairwise. So want to make the theory smaller
     % comparisons. If we run long vs long, and keep only barcodes with
     % subbarcodes score < thresh, maybe more accurate?
-    tic
+    tic % test:
     [oS] = calc_overlap_mp(theoryStruct(1:50),1, 200, 'test');
     toc
+
+    %%
 
     vec = [theoryStruct(:).rawBarcode nan];
     tempCell = cell(1, 2*numel(theoryStruct)-1);
@@ -32,10 +35,35 @@ function [] = partial_database_pipeline()
 
     % convert vec to integers
     newvec = round((vecConcat-min(vecConcat))/(max(vecConcat)-min(vecConcat))*256);
+
+        %%
+    nanIndices = find(isnan(newvec));
+
+    barIndex = zeros(1,length(newvec));
+    indexes = cell(1,numel(nanIndices)+1);
+    % Split the vector based on NaN delimiters
+    for i = 1:numel(nanIndices)
+        if i == 1
+            barIndex(1:nanIndices(i)-1) = i*ones(1, nanIndices(i)-1);
+            indexes{i} = [1 nanIndices(i)-1];
+        else
+            barIndex(nanIndices(i-1)+1:nanIndices(i)-1) = i*ones(1, nanIndices(i)-1-(nanIndices(i-1)+1)+1);
+            indexes{i}  = [nanIndices(i-1)+1 nanIndices(i)-1];
+        end
+    end
+    
+    % Add the last part of the vector if NaN is not the last element
+    if nanIndices(end) ~= numel(barIndex)
+        barIndex(nanIndices(end)+1:end) = i*ones(1,numel(barIndex)-nanIndices(end));
+        indexes{numel(nanIndices)+1} = [nanIndices(end)+1 numel(barIndex)];
+    end
+
+%%
+
+    %
 %     newvec(isnan(vecConcat)) = nan;
     writematrix(newvec,'bar.txt','Delimiter',' ')
 %     strjoin([theoryStruct(1:2).rawBarcode])
-w = 200;
 numWorkers = 32;
        com= strcat(['SCAMP --window=' num2str(w) ' --input_a_file_name='...
            '/export/scratch/albertas/data_temp/bargrouping/PARTIAL_DB_DATA/bar.txt' ' --num_cpu_workers=' num2str(numWorkers) ' --no_gpu --output_pearson --print_debug_info'...
@@ -53,11 +81,52 @@ nonanValues = cellfun(@(x) x(1)~='-',raw2{1});
 mp1 = nan(length(nonanValues),1);
 mp1(nonanValues) = sscanf(sprintf(' %s',raw2{1}{nonanValues}),'%f');
    
-figure,plot(mp1)
+mpI = importdata('bar_index');
+
+lenThr = 10000;
+figure,tiledlayout(3,1)
+nexttile
+plot(newvec(1:lenThr))
+title('Theoretical barcodes')
+nexttile
+plot(mp1(1:lenThr))
+title('Local score, w=200 (~400kb)')
+nexttile
+plot(mpI(1:lenThr))
+title('Local index')
 
 
-nanIndices = find(isnan(newvec));
 nanIndices = nanIndices(nanIndices<length(mp1)-w);
+
+%% todo: convert to similarity matrix, using the mpI. Create vector with bar index
+mapMatrix = nan(numel(nanIndices)+1,numel(nanIndices)+1);
+for i=1:numel(nanIndices)+1
+    i
+    curElements = mpI(indexes{i}(1):min(end,indexes{i}(2)));
+    curElements = curElements(curElements~=-1);
+    barcodesMappedTo = barIndex(curElements+1);
+    [vals,rep] = unique(barcodesMappedTo);
+    mapMatrix(i,vals) = rep/length(barcodesMappedTo);
+end
+
+import Core.Discriminative.extract_species_name;
+[uniqueSpeciesNames,idSpecies] = Core.Discriminative.extract_species_name({theoryStruct.name});
+
+
+pyoIds = find(idSpecies==3284);
+
+figure,imagesc(mapMatrix(pyoIds,pyoIds));colormap(gray);colorbar
+title('S.Pyogenes local similarity matrix')
+
+ecoliId = find(cellfun(@(x) ~isempty(strfind('Escherichia coli',x)),uniqueSpeciesNames));
+ecoliIds = find(idSpecies==ecoliId);
+
+figure,imagesc(mapMatrix(pyoIds,ecoliIds));colormap(gray);colorbar
+title('S.Pyogenes vs E.Coli local similarity matrix')
+
+
+%% now check for which vectors has PCC larger than pccThresh. We can also find corresponding theories that they match
+% best to. Then one of them should be removed and one kept.
 
 pccThresh = 0.9;
 outVec = mp1 < pccThresh;
@@ -81,6 +150,9 @@ end
 % Repetitive sequences: challenge is which sequence to keep. Maybe have to
 % look into mpI
 
+figure,histogram(splittedVectors)
+title('Theories locally matching somewhere with PCC <0.9')
+xlabel('Percentage of theories with PCC <0.9 ')
 
 
        %%
