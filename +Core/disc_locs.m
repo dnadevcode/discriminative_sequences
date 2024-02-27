@@ -1,4 +1,4 @@
-function [refNums, allNums, bestCoefs,refNumBad,bestCoefsBad] = disc_locs(rezMax,stouffer)
+function [refNums, allNums, bestCoefs,refNumBad,bestCoefsBad] = disc_locs(rezMax,stouffer,cdiff)
     % disc_locs - simple code to find locations within cdiff of the max. If
     % they are all from the same species/subspecies, then the barcode is
     % discriminative at that level
@@ -15,7 +15,10 @@ function [refNums, allNums, bestCoefs,refNumBad,bestCoefsBad] = disc_locs(rezMax
     if nargin < 2
         stouffer = 0;
     end
-    cdiff = 0.05;
+    
+    if nargin < 3
+        cdiff = 0.05;
+    end
 
     numTheories = length(rezMax{1});
 
