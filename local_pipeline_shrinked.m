@@ -155,7 +155,7 @@ for wIdx = 1:length(windowWidths)
     %
 %     import Core.export_coefs;
 %     export_coefs(theoryStruct,rezMaxMP,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
-    save([sets.dirName, num2str(sets.w),'_rez.mat'],'rezMaxMP','passingThreshBars','sets');
+    save([sets.dirName, num2str(sets.w),'_rez.mat'],'rezMaxMP','passingThreshBars','sets','-v7.3');
 end
 
 % quick_visual_plot(16,9242,barGen,rezMax,bestBarStretch,theoryStruct)
