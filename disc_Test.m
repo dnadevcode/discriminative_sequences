@@ -1,18 +1,21 @@
 
-elts = zeros(1,length(rezMaxMP)*length(rezMaxMP{1})*length(rezMaxMP{1}{1}));
-i=1;
-for idx=1:length(rezMaxMP)
-    for idy=1:length(rezMaxMP{idx})
-        for idz = 1:length(rezMaxMP{idx}{idy})
-            elts(i) = rezMaxMP{idx}{idy}{idz}.maxcoef(1)< 0.5;
-            i=i+1;
-        end
-    end
+% elts = zeros(1,length(rezMaxMP)*length(rezMaxMP{1})*length(rezMaxMP{1}{1}));
+% i=1;
+% for idx=1:length(rezMaxMP)
+%     for idy=1:length(rezMaxMP{idx})
+%         for idz = 1:length(rezMaxMP{idx}{idy})
+%             elts(i) = rezMaxMP{idx}{idy}{idz}.maxcoef(1)< 0.5;
+%             i=i+1;
+%         end
+%     end
 end
 
-cellfun(@(z) cellfun(@(y) cellfun(@(x) x{1}.maxcoef(1),y),z),rezMaxMP)
+% cellfun(@(z) cellfun(@(y) cellfun(@(x) x{1}.maxcoef(1),y),z),rezMaxMP)
+tic
+    % allCoefsSingle = cellfun(@(barix) cellfun(@(y) cellfun(@(x) x.maxcoef(1),y),barix,'un',false),rezMaxMP,'un',false);
+toc
 
-
+% allCoefsSingle = arrayfun(@(x) arrayfun(@(y) arrayfun(@(z) rezMaxMP{z}{y}{x}.maxcoef(1) ,1:length(rezMaxMP)),1:length(rezMaxMP{1}),'un',false),1:length(rezMaxMP{1}{1}),'un',false);
 
 
 
@@ -23,14 +26,14 @@ import Core.Discriminative.extract_species_name;
 
 cdiff = 0.05;
 ecoliT = 1197;
-    theories = cell(1,length(rezMaxMP{1}{1}));
+theories = cell(1,size(allCoefs,1));
 
-for barix=1:length(rezMaxMP{1}{1})
-    allCoefsSingle = cellfun(@(y) cellfun(@(x) x{barix}.maxcoef(1),y),rezMaxMP,'un',false);
+for barix=1:size(allCoefs,1)
+    % allCoefsSingle = cellfun(@(y) cellfun(@(x) x{barix}.maxcoef(1),y),rezMaxMP,'un',false);
     
-    curBdisc = zeros(1,length(allCoefsSingle{1}));
-    for barid = 1:length(allCoefsSingle{1})
-        singleCoefs = cellfun(@(x) x(barid), allCoefsSingle);
+    curBdisc = zeros(1,size(allCoefs,2));
+    for barid = 1:size(allCoefs,2)
+        singleCoefs =  squeeze(allCoefs(barix,barid,:));
         
         [a,sortedid] = sort(singleCoefs,'desc','MissingPlacement','last');
         %         maxs = a(1);

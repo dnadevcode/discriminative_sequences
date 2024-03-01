@@ -1,4 +1,4 @@
-function [] = local_pipeline_shrinked(ix,dirName,depth,windowWidths)
+function [] = local_pipeline_shrinked(ix,dirName,depth,windowWidths, sF)
 
 
 % EC17 = DA65780
@@ -73,7 +73,11 @@ sets.genConsensus  = 0;
 %  following "Strain-level bacterial typing directly from patient
 % samples using optical DNA mapping"
 sets.timeFramesNr = 20;
-sets.theory.stretchFactors = 0.8:0.025:1; %as per 
+if nargin < 5
+    sets.theory.stretchFactors = 0.8:0.025:1; %as per 
+else
+    sets.theory.stretchFactors = sF;
+end
 
 sets.alignMethod = 1;
 sets.edgeDetectionSettings.method = 'Otsu';
@@ -150,12 +154,12 @@ for wIdx = 1:length(windowWidths)
         sets.comparisonMethod = 'mpnan';
     end
 
-    [rezMaxMP] = hca_compare_distance(barGen(passingThreshBars),theoryStruct, sets );
+    [rezMaxMP,allCoefs] = hca_compare_distance(barGen(passingThreshBars),theoryStruct, sets );
 
     %
 %     import Core.export_coefs;
 %     export_coefs(theoryStruct,rezMaxMP,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
-    save([sets.dirName, num2str(sets.w),'_rez.mat'],'rezMaxMP','passingThreshBars','sets','-v7.3');
+    save([sets.dirName, num2str(sets.w),'_', num2str(min(sF)),'sf_rez.mat'],'allCoefs','passingThreshBars','sets','-v7.3');
 end
 
 % quick_visual_plot(16,9242,barGen,rezMax,bestBarStretch,theoryStruct)
