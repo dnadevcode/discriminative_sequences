@@ -155,6 +155,14 @@ title('Theories locally matching somewhere with PCC <0.9')
 xlabel('Percentage of theories with PCC <0.9 ')
 
 
+
+figure,histogram(splittedVectors(pyoIds));
+hold on
+histogram(splittedVectors(ecoliIds));
+title('Theories locally matching somewhere with PCC <0.9')
+xlabel('Percentage of theories with PCC <0.9 ')
+legend({'S.Pyogenes','E.Coli'})
+
        %%
 
     timestamp = datestr(clock(), 'yyyy-mm-dd_HH_MM_SS');
