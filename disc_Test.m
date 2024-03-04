@@ -1,3 +1,14 @@
+foldE = '/proj/snic2022-5-384/users/x_albdv/data/bargrouping/local/';
+% foldE = '/proj/snic2022-5-384/users/x_albdv/data/bargrouping/local_pyo/';
+
+cont = dir(foldE)
+cont = cont(and([cont.isdir], ~ismember({cont.name}, {'.', '..'})));
+
+coefs = cell(1,length(cont));
+for i = 1:length(cont)
+    file = dir(fullfile(fullfile(cont(i).folder,cont(i).name),'*sf_rez*'));
+    coefs{i} = load(fullfile(file(1).folder,file(1).name));
+end
 
 % elts = zeros(1,length(rezMaxMP)*length(rezMaxMP{1})*length(rezMaxMP{1}{1}));
 % i=1;
@@ -8,7 +19,8 @@
 %             i=i+1;
 %         end
 %     end
-end
+
+
 
 % cellfun(@(z) cellfun(@(y) cellfun(@(x) x{1}.maxcoef(1),y),z),rezMaxMP)
 tic
