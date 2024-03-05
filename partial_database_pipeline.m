@@ -8,13 +8,13 @@ function [] = partial_database_pipeline()
     tic
     import Core.load_theory_structure;
     thryFileIdx = 1; % todo: only pass single
-    [theoryStruct,sets] = load_theory_structure(0.05,thryFileIdx);
+    [theoryStruct,sets] = load_theory_structure(0.025,thryFileIdx);
     toc
     for i=1:length(theoryStruct)
         theoryStruct(i).rawBitmask = ones(1,length(  theoryStruct(i).rawBarcode ));
     end
     % todo: maybe don't add extra psf?
-    w = 200;
+    w = 100;
 
     %% Database self-similarity. A bit slow if to run all pairwise. So want to make the theory smaller
     % comparisons. If we run long vs long, and keep only barcodes with
@@ -23,40 +23,43 @@ function [] = partial_database_pipeline()
     [oS] = calc_overlap_mp(theoryStruct(1:50),1, 200, 'test');
     toc
 
-    %%
+    %% Create a new vector from both theories and their reverse complements.
+    thryToCalc = theoryStruct;
 
-    vec = [theoryStruct(:).rawBarcode nan];
-    tempCell = cell(1, 2*numel(theoryStruct)-1);
-    tempCell(1:2:end) = {theoryStruct(:).rawBarcode};
+    % vec = [thryToCalc(:).rawBarcode nan];
+    tempCell = cell(1, 4*numel(thryToCalc)); % 1 is forward, 3 is reverse, 2 and 4 is nan
+    tempCell(1:4:end) = {thryToCalc(:).rawBarcode};
+    tempCell(3:4:end) = cellfun(@(x) fliplr(x),{thryToCalc(:).rawBarcode},'un',false);
     tempCell(2:2:end) = {NaN};
     % Concatenate the cell array into a single vector
     vecConcat = cat(2, tempCell{:});
 
-
-    % convert vec to integers
+    % convert vec to integers for simpler calculation
     newvec = round((vecConcat-min(vecConcat))/(max(vecConcat)-min(vecConcat))*256);
 
-        %%
+    %%
     nanIndices = find(isnan(newvec));
 
+    % Preallocate memory
     barIndex = zeros(1,length(newvec));
-    indexes = cell(1,numel(nanIndices)+1);
+    indexes = cell(1,numel(nanIndices)/2);
     % Split the vector based on NaN delimiters
-    for i = 1:numel(nanIndices)
+    for i = 1:2:numel(nanIndices) % every two, since doesn't matter if we look at forward or reverse
         if i == 1
-            barIndex(1:nanIndices(i)-1) = i*ones(1, nanIndices(i)-1);
-            indexes{i} = [1 nanIndices(i)-1];
+            barIndex(1:nanIndices(i+1)-1) = i*ones(1, nanIndices(i+1)-1);
+            indexes{i} = [1 nanIndices(i+1)-1];
         else
-            barIndex(nanIndices(i-1)+1:nanIndices(i)-1) = i*ones(1, nanIndices(i)-1-(nanIndices(i-1)+1)+1);
-            indexes{i}  = [nanIndices(i-1)+1 nanIndices(i)-1];
+            barIndex(nanIndices(i-1)+1:nanIndices(i+1)-1) = ceil(i/2)*ones(1, nanIndices(i+1)-1-(nanIndices(i-1)+1)+1);
+            indexes{ceil(i/2)}  = [nanIndices(i-1)+1 nanIndices(i+1)-1];
         end
     end
     
-    % Add the last part of the vector if NaN is not the last element
-    if nanIndices(end) ~= numel(barIndex)
-        barIndex(nanIndices(end)+1:end) = i*ones(1,numel(barIndex)-nanIndices(end));
-        indexes{numel(nanIndices)+1} = [nanIndices(end)+1 numel(barIndex)];
-    end
+    % Don't need the last element anymore
+    % % Add the last part of the vector if NaN is not the last element
+    % if nanIndices(end) ~= numel(barIndex)
+    %     barIndex(nanIndices(end)+1:end) = i*ones(1,numel(barIndex)-nanIndices(end));
+    %     indexes{numel(nanIndices)+1} = [nanIndices(end)+1 numel(barIndex)];
+    % end
 
 %%
 
@@ -66,13 +69,24 @@ function [] = partial_database_pipeline()
 %     strjoin([theoryStruct(1:2).rawBarcode])
 numWorkers = 32;
        com= strcat(['SCAMP --window=' num2str(w) ' --input_a_file_name='...
-           '/export/scratch/albertas/data_temp/bargrouping/PARTIAL_DB_DATA/bar.txt' ' --num_cpu_workers=' num2str(numWorkers) ' --no_gpu --output_pearson --print_debug_info'...
+           fullfile(pwd,'bar.txt') ' --num_cpu_workers=' num2str(numWorkers) ' --no_gpu --output_pearson --print_debug_info'...
            ' --output_a_file_name=' 'bar_mp' ...
            ' --output_a_index_file_name=' 'bar_index']);
 
 tic
 [a,val ] = system(com);
 toc
+
+% % comp time
+% x = [100 200 400 1000];
+% y = [1.5 5 16.3 100];
+% coefs = polyfit(x,y,2);
+% figure,plot(x,y);hold on
+% xx=100:1000;
+% timefun = @(xx) coefs(1)*xx.^2+coefs(2)*xx+coefs(3);
+% plot(xx,timefun(xx))
+
+%
 
 fid = fopen('bar_mp');
 raw2 = textscan(fid, '%s ');
@@ -99,9 +113,10 @@ title('Local index')
 nanIndices = nanIndices(nanIndices<length(mp1)-w);
 
 %% todo: convert to similarity matrix, using the mpI. Create vector with bar index
-mapMatrix = nan(numel(nanIndices)+1,numel(nanIndices)+1);
-for i=1:numel(nanIndices)+1
+mapMatrix = nan(numel(nanIndices)/2,numel(nanIndices)/2);
+for i=1:numel(nanIndices)/2
     i
+    % curM =  mp1(indexes{i}(1):min(end,indexes{i}(2)));
     curElements = mpI(indexes{i}(1):min(end,indexes{i}(2)));
     curElements = curElements(curElements~=-1);
     barcodesMappedTo = barIndex(curElements+1);
@@ -131,37 +146,51 @@ title('S.Pyogenes vs E.Coli local similarity matrix')
 pccThresh = 0.9;
 outVec = mp1 < pccThresh;
 % Preallocate cell array to store splitted vectors
-splittedVectors = zeros(1, numel(nanIndices));
+splittedVectors = zeros(1,length(indexes));
 
 % Split the vector based on NaN delimiters
-for i = 1:numel(nanIndices)
-    if i == 1
-        splittedVectors(i) = mean(outVec(1:nanIndices(i)-1));
-    else
-        splittedVectors(i) = mean(outVec(nanIndices(i-1)+1:nanIndices(i)-1));
-    end
+for i = 1:length(indexes)
+    splittedVectors(i) =  mean(outVec(indexes{i}(1):min(end,indexes{i}(2))));
 end
+    % if i == 1
+    %     splittedVectors(i) = mean(outVec(1:nanIndices(i)-1));
+    % else
+    %     splittedVectors(i) = mean(outVec(nanIndices(i-1)+1:nanIndices(i)-1));
+    % end
+% end
 
-% Add the last part of the vector if NaN is not the last element
-if nanIndices(end) ~= numel(outVec)
-    splittedVectors(end+1) = mean(outVec(nanIndices(end)+1:end));
-end
+% 
+% % Add the last part of the vector if NaN is not the last element
+% if nanIndices(end) ~= numel(outVec)
+%     splittedVectors(end+1) = mean(outVec(nanIndices(end)+1:end));
+% end
 
 % Repetitive sequences: challenge is which sequence to keep. Maybe have to
 % look into mpI
 
 figure,histogram(splittedVectors)
-title('Theories locally matching somewhere with PCC <0.9')
-xlabel('Percentage of theories with PCC <0.9 ')
+title(['Theories locally matching somewhere with PCC <', num2str(pccThresh)])
+xlabel(['Percentage of theories with PCC < ',num2str(pccThresh)])
 
 
 
-figure,histogram(splittedVectors(pyoIds));
+figure,histogram(splittedVectors(pyoIds),'Normalization','pdf');
 hold on
-histogram(splittedVectors(ecoliIds));
-title('Theories locally matching somewhere with PCC <0.9')
-xlabel('Percentage of theories with PCC <0.9 ')
+histogram(splittedVectors(ecoliIds),'Normalization','pdf');
+title(['Theories locally matching somewhere with PCC < ', num2str(pccThresh)])
+xlabel(['Percentage of theories with PCC < ', num2str(pccThresh)])
 legend({'S.Pyogenes','E.Coli'})
+
+
+%%
+thrid1 = 3538;
+thrid2 = 3284;
+
+id1 = find(idSpecies==thrid1);
+id2 = find(idSpecies==thrid2);
+
+figure,imagesc(mapMatrix(id1,id2));colormap(gray);colorbar
+title('Local similarity matrix')
 
        %%
 
