@@ -131,8 +131,8 @@ theoryStruct = convert_nm_ratio(sets.theory.nmbp, theoryStruct,sets );
 
 %
 tic
-sets.w = 300;
-sets.comparisonMethod = 'mass_pcc';
+% sets.w = 300;
+% sets.comparisonMethod = 'mass_pcc';
 sets.genConsensus = 0;
 sets.filterSettings.filter = 0;
 % globalov = 0;
@@ -194,7 +194,7 @@ for wIdx = 1:length(windowWidths)
 %         discLocations = (find(a>a(1)-cdiff));
 %         theories{i}{j}{barid} = sortedid(discLocations);
     end
-        import Core.export_coefs;
+    import Core.export_coefs;
     export_coefs(theoryStruct,rezMax,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
 %     export_coefs(theoryStruct(1:100),rezMax,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
 
