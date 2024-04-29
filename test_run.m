@@ -1,7 +1,8 @@
 % example run:
-ix=2
-iy=1
-dirName = '/export/scratch/albertas/download_dump/S. pyogenes all data';
+ix = 1;
+iy = 1;
+% dirName = '/export/scratch/albertas/download_dump/S. pyogenes all data';
+dirName = '/export/scratch/albertas/download_dump/pyo_test/';
 depth=1
 windowWidths=[0 250:50:1000];
 sF = 0.9:0.025:1.1;
@@ -10,7 +11,10 @@ thryFiles = dir('/export/scratch/albertas/download_dump/single/theoryOutput/*.ma
 
 local_pipeline_mp(ix, iy, dirName, depth, windowWidths, sF, thryFiles)
 
-
+ c = parcluster;
+% c.AdditionalProperties.AccountName = 'snic2021-5-132';
+% c.AdditionalProperties.WallTime = '1:00:00';
+j =batch(c,@local_pipeline_mp,1,{ix, iy, dirName, depth, 0, sF, thryFiles},'Pool',30);
 
 %%
 % example run:

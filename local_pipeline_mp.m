@@ -1,4 +1,4 @@
-function [] = local_pipeline_mp(ix, iy, dirName, depth, windowWidths, sF, thryFiles)
+function [t] = local_pipeline_mp(ix, iy, dirName, depth, windowWidths, sF, thryFiles)
 
 % local_pipeline_mp - optimized function to run experiment vs theory
 % comparisons
@@ -6,7 +6,7 @@ function [] = local_pipeline_mp(ix, iy, dirName, depth, windowWidths, sF, thryFi
 %   Args:
 %       ix - folder index
 %       iy - subfolder index
-
+t0 = tic;
 
 
 % EC17 = DA65780
@@ -22,15 +22,16 @@ end
 if nargin < 4
     depth = 1;
 end
-% folds
-% directory name
-% thryFiles = [dir('/proj/snic2022-5-384/users/x_albdv/data/CHR/New Ref-Theory files May 2022/*.mat'),dir('/export/scratch/albertas/data_temp/bargrouping/New Ref-Theory files May 2022/*.mat')];
 
 if nargin < 2
     dirName = '/proj/snic2022-5-384/users/x_albdv/data/bargrouping/local/';
 end
-addpath(genpath(dirName));
-[~,~] =mkdir('output');
+
+addpath(genpath(dirName)); % add to path the location of kymos
+
+[~,~] =mkdir('output'); % create output directory
+
+
 if nargin < 1
     ix = 1;
 end
@@ -102,13 +103,16 @@ import Core.load_kymo_data;
 import Core.rescale_barcode_data;
 [barGen] = rescale_barcode_data(barGen,sets.theory.stretchFactors);
 
-save(['bars.mat'],'barGen','kymoStructs','sets');
+% save(['bars.mat'],'barGen','kymoStructs','sets');
 
 % figure,tiledlayout(ceil(sqrt(length(kymoStructs))),ceil(length(kymoStructs)/sqrt(length(kymoStructs))),'TileSpacing','none','Padding','none')
 % for i=1:length(kymoStructs)
 %     nexttile;        imshowpair(imresize(kymoStructs{i}.alignedMask,[200 500]),imresize(kymoStructs{i}.alignedKymo,[200 500]), 'ColorChannels','red-cyan'  );    title(num2str(i));
 % % imshowpair(imresize(kymoStructs{i}.unalignedBitmask,[200 500]),imresize(kymoStructs{i}.unalignedKymo,[200 500]), 'ColorChannels','red-cyan'  )
 % end
+
+clear kymoStructs; % releases memory used up by kymoStructs
+% tic
 
 % Load theory. Takes
 % load(thryFile); 
@@ -123,14 +127,21 @@ theoryStruct = load_theory(sets);
 sets.theory.nmbp = sets.nmbp*mean(sets.theory.stretchFactors);
 
 % 
+% tic
+% ticBytes(gcp);
 
 import CBT.Hca.Core.Analysis.convert_nm_ratio;
-theoryStruct = convert_nm_ratio(sets.theory.nmbp, theoryStruct,sets );
+theoryStruct = convert_nm_ratio(sets.theory.nmbp, theoryStruct, sets );
+
+thryNames = {theoryStruct.name};
+barcodeNames = cellfun(@(x) x.name,barGen,'un',false);
+% tocBytes(gcp);
+% toc
 
 % convert thry to correct nm/px
 
 %
-tic
+
 % sets.w = 300;
 % sets.comparisonMethod = 'mass_pcc';
 sets.genConsensus = 0;
@@ -153,6 +164,7 @@ sets.comparisonMethod = 'mpnan';
 
 
 import CBT.Hca.Core.Comparison.hca_compare_distance;
+import Core.export_coefs_local;
 
 for wIdx = 1:length(windowWidths)
     sets.w = windowWidths(wIdx);
@@ -166,36 +178,52 @@ for wIdx = 1:length(windowWidths)
         sets.comparisonMethod = 'mpnan';
     end
 
-    % small test
-%     [rezMaxMP,allCoefs] = hca_compare_distance(barGen(passingThreshBars),theoryStruct(1:100), sets );
+    % small test. Todo: do not save the whole rezMaxMP since it gives
+    % memory issues
+%     ticBytes(gcp);
+% 
+%     [rezMaxMP] = hca_compare_distance(barGen(passingThreshBars),theoryStruct(1:100), sets );
+% tocBytes(gcp);
 
-    [rezMaxMP,allCoefs] = hca_compare_distance(barGen(passingThreshBars),theoryStruct, sets );
-
+    [rezMaxMP] = hca_compare_distance(barGen(passingThreshBars), theoryStruct, sets );
+    
+    clear theoryStruct;
+    delete(gcp);
     %
+
+%     cc(idy,idx) = rezMaxMP{1}(idx,idy).maxcoef(1);
+
 %     import Core.export_coefs;
 %     export_coefs(theoryStruct,rezMaxMP,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
-    save([sets.dirName, num2str(sets.w),'_', num2str(min(sF)),'sf_rez.mat'],'allCoefs','passingThreshBars','sets','-v7.3');
+%     save([sets.dirName, num2str(sets.w),'_', num2str(min(sF)),'sf_rez.mat'],'rezMaxMP','passingThreshBars','sets','-v7.3');
 
-    % Save the reztxt as before:
+    % Get info for all the coefficients. Save this as a separate matrix
+    allCoefs = cellfun(@(x) x{1}, rezMaxMP,'un',false);
+    matAllCoefs =  cat(3, allCoefs{:});
+    save([sets.dirName, num2str(sets.w),'_', num2str(min(sF)),'sf_allcoefs.mat'],'matAllCoefs','passingThreshBars','sets','-v7.3');
 
-%% cascading. Save best
-    rezMax =cell(1,size(allCoefs,3));
-    bestBarStretchMP = cell(1,size(allCoefs,3));
-    for barid = 1:size(allCoefs,2)
-%         s ingleCoefs =  squeeze(max(allCoefs(:,barid,:),[],1));
-        [~ ,singlePos ] =  max(allCoefs(:,barid,:),[],1);
-%         singleCoefs = squeeze(singleCoefs);
-        singlePos =  squeeze(singlePos);
-%         [a,sortedid] = sort(singleCoefs,'desc','MissingPlacement','last');
-        for j=1:length(singlePos)
-             bestBarStretchMP{j}(barid) =  sets.theory.stretchFactors(singlePos(j));
-            rezMax{j}{barid} = rezMaxMP{j}{barid}{singlePos(j)};
-        end
-%         discLocations = (find(a>a(1)-cdiff));
-%         theories{i}{j}{barid} = sortedid(discLocations);
+    tic
+    maxCoef = cell(1,size(matAllCoefs,1));
+    maxOr = cell(1,size(matAllCoefs,1));
+    maxPos = cell(1,size(matAllCoefs,1));
+    maxSecondPos = cell(1,size(matAllCoefs,1));
+    maxlen = cell(1,size(matAllCoefs,1));
+    bestSF = cell(1,size(matAllCoefs,1));
+
+%% Now find the best coefficient from matAllCoefs (using a cascading or whatever scheme)
+    for barid =1:size(matAllCoefs,1)
+        [singleCoef , singlePos ] =  max(matAllCoefs(barid,:,:),[],2);
+        pos  = squeeze(singlePos)';
+        maxCoef{barid} =  squeeze(singleCoef);
+        maxOr{barid} = arrayfun(@(x,y) rezMaxMP{x}{3}(barid,y), 1:length(rezMaxMP),pos);
+        maxPos{barid} = arrayfun(@(x,y) rezMaxMP{x}{2}(barid,y), 1:length(rezMaxMP),pos);
+        maxSecondPos{barid} = arrayfun(@(x,y) rezMaxMP{x}{4}(barid,y), 1:length(rezMaxMP),pos);
+        maxlen{barid} = arrayfun(@(x,y) rezMaxMP{x}{5}(barid,y), 1:length(rezMaxMP),pos);
+        bestSF{barid} =  sets.theory.stretchFactors(pos);
     end
-    import Core.export_coefs;
-    export_coefs(theoryStruct,rezMax,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
+    toc
+  
+    export_coefs_local(thryNames,maxCoef,maxOr,maxPos,maxlen, bestSF, barcodeNames(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
 %     export_coefs(theoryStruct(1:100),rezMax,bestBarStretchMP,barGen(passingThreshBars),[sets.dirName, '_MP_w=',num2str(sets.w),'_']);
 
 
@@ -204,6 +232,7 @@ for wIdx = 1:length(windowWidths)
 
 end
 
+t = toc(t0);
 % quick_visual_plot(16,9242,barGen,rezMax,bestBarStretch,theoryStruct)
 
 %  super_quick_plot(16,barGen,comparisonStruct,theoryStruct)
