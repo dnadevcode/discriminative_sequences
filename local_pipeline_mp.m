@@ -168,6 +168,7 @@ import Core.export_coefs_local;
 
 for wIdx = 1:length(windowWidths)
     sets.w = windowWidths(wIdx);
+    display(['Running w = ',num2str(sets.w)]);
     % only local lengths for which all length re-scaled versions passes the
     % threshold
     passingThreshBars = find(cellfun(@(x) sum(x.rawBitmask),barGen)*sets.theory.stretchFactors(end) >= sets.w);

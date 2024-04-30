@@ -1,8 +1,8 @@
 % example run:
 ix = 1;
 iy = 1;
-% dirName = '/export/scratch/albertas/download_dump/S. pyogenes all data';
-dirName = '/export/scratch/albertas/download_dump/pyo_test/';
+dirName = '/export/scratch/albertas/download_dump/S. pyogenes all data/onlyKymo/';
+% dirName = '/export/scratch/albertas/download_dump/pyo_test/';
 depth=1
 windowWidths=[0 250:50:1000];
 sF = 0.9:0.025:1.1;
@@ -42,6 +42,17 @@ for i=1:numDirs
     end
 end
 
+
+twoList = zeros(sum(subdirs),2);
+id=1;
+for i=1:length(subdirs)
+    for j=1:subdirs(i)
+        twoList(id,:) = [i subdirs(i)];
+        id = id+1;
+    end
+end
+
+
 % total sum(subdirs) folders to run. First run everything at 0 to check
 windowWidths=0 ; %[0 250:50:1000];
 sF = 0.9:0.025:1.1;
@@ -75,4 +86,12 @@ iy=1
 
 local_pipeline_mp(ix, iy, dirName, depth, windowWidths, sF, thryFiles)
 
+% re-calculate the ones that failed before
+w = 350;
+batch(c,@local_pipeline_mp,1,{ix,iy, dirName, depth, w, sF, thryFiles},'Pool',29);
+
+% re-calculate the ones that failed before
+w = 300;
+idd = 22;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',29);
 
