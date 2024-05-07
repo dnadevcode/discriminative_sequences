@@ -1,12 +1,16 @@
-function [theoryStruct,sets] = load_theory_structure(nmbp, thryFileIdx,selected)
-
+function [theoryStruct,sets] = load_theory_structure(nmbp, thryFileIdx,selected,thryName)
 
 sets.dirName = 'output';
 sets.nmbp = nmbp;
-thryFiles = [dir('/export/scratch/albertas/data_temp/bargrouping/New Ref-Theory files May 2022/*.mat'),dir('C:\Users\Lenovo\postdoc\DATA\bargrouping\*.mat'),dir('/proj/snic2022-5-384/users/x_albdv/data/CHR/New Ref-Theory files May 2022/*.mat')];
-% thryFileIdx = 1;
-% thryFileIdx = find(arrayfun(@(x) ~isempty(strfind(thryFiles(x).name,spltName{end-1})),1:length(thryFiles)));
-sets.thryFile = fullfile(thryFiles(thryFileIdx).folder,thryFiles(thryFileIdx).name);
+
+if nargin < 4
+    thryFiles = [dir('/export/scratch/albertas/data_temp/bargrouping/New Ref-Theory files May 2022/*.mat'),dir('C:\Users\Lenovo\postdoc\DATA\bargrouping\*.mat'),dir('/proj/snic2022-5-384/users/x_albdv/data/CHR/New Ref-Theory files May 2022/*.mat')];
+    % thryFileIdx = 1;
+    % thryFileIdx = find(arrayfun(@(x) ~isempty(strfind(thryFiles(x).name,spltName{end-1})),1:length(thryFiles)));
+    sets.thryFile = fullfile(thryFiles(thryFileIdx).folder,thryFiles(thryFileIdx).name);
+else
+    sets.thryFile = thryName;
+end
 
 % files = dir(fullfile(sets.dirName,'*.tif'));
 
@@ -41,7 +45,7 @@ sets.theory.theoryDontSaveTxts = 1;
 import CBT.Hca.UI.Helper.load_theory;
 theoryStruct = load_theory(sets);
 
-if nargin >=3
+if nargin >=3 && ~isempty(selected)
     theoryStruct = theoryStruct(selected);
 end
 

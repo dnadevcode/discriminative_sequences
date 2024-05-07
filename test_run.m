@@ -95,3 +95,11 @@ w = 300;
 idd = 22;
 batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',29);
 
+%
+w = 450;
+v = cell(numDirs,subdirs(i));
+for i=1:numDirs
+    for j=1:subdirs(i)
+        v{i,j} =batch(c,@local_pipeline_mp,1,{i, j, dirName, depth, w, sF, thryFiles},'Pool',29);
+    end
+end
