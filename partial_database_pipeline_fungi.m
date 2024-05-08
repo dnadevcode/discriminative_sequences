@@ -2,6 +2,7 @@ function [] = partial_database_pipeline_fungi()
     % run against database_fungi for semi-realistic barcodes
 
     thryName = '/export/scratch/albertas/download_dump/fungi/single/theoryOutput/theoryGen_0.34_110_300_0_2024-05-06_12_56_25_session.mat';
+    thryName = 'C:\Users\Lenovo\postdoc\Chalmers\8_other\yeast_mappability\theoryGen_0.34_110_300_0_2024-05-06_12_56_25_session.mat';
 
     import Core.load_theory_structure;
     [theoryStruct,sets] = load_theory_structure(0.2,[],[],thryName);
@@ -100,14 +101,9 @@ function [] = partial_database_pipeline_fungi()
     nonanValues = cellfun(@(x) x(1)~='-',raw2{1});
     mp1 = nan(length(nonanValues),1);
     mp1(nonanValues) = sscanf(sprintf(' %s',raw2{1}{nonanValues}),'%f');
-       
-    mpI = importdata('bar_index');
-
 
     for i=1:length(indexes)
         mp1(indexes{i}(1):indexes{i}(2))
-
-
     end
 
     figure,tiledlayout(3,2)
