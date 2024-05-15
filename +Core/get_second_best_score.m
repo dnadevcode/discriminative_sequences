@@ -1,4 +1,4 @@
-function [] = get_second_best_score(idSpecies,idSeq,theoryStruct,wmin,numWorkers)
+function [indexesT,restOfTheories] = get_second_best_score(idSpecies,idSeq,theoryStruct,wmin,numWorkers)
 
 %% For rest of the theories
 restOfTheories = find(idSpecies~=idSeq);
@@ -18,15 +18,29 @@ newvecB = round((vecConcat-min(vecConcat))/(max(vecConcat)-min(vecConcat))*256);
 nanIndices = find(isnan(newvecB));
 
 % Preallocate memory
-indexesT = cell(1,numel(nanIndices)/2);
-% Split the vector based on NaN delimiters
-for i = 1:numel(nanIndices) % every two, since doesn't matter if we look at forward or reverse
-    if i == 1
-        indexesT{i} = [1 nanIndices(i)-1];
-    else
-        indexesT{i}  = [nanIndices(i-1)+1 nanIndices(i)-1];
+% indexesT = cell(1,numel(nanIndices)/2);
+% % Split the vector based on NaN delimiters
+% for i = 1:numel(nanIndices) % every two, since doesn't matter if we look at forward or reverse
+%     if i == 1
+%         indexesT{i} = [1 nanIndices(i)-1];
+%     else
+%         indexesT{i}  = [nanIndices(i-1)+1 nanIndices(i)-1];
+%     end
+% end
+
+%     barIndex = zeros(1,length(newvec));
+    indexesT = cell(1,numel(nanIndices)/2);
+    % Split the vector based on NaN delimiters
+    for i = 1:2:numel(nanIndices) % every two, since doesn't matter if we look at forward or reverse
+        if i == 1
+%             barIndex(1:nanIndices(i+1)-1) = i*ones(1, nanIndices(i+1)-1);
+            indexesT{i} = [1 nanIndices(i+1)-1];
+        else
+%             barIndex(nanIndices(i-1)+1:nanIndices(i+1)-1) = ceil(i/2)*ones(1, nanIndices(i+1)-1-(nanIndices(i-1)+1)+1);
+            indexesT{ceil(i/2)}  = [nanIndices(i-1)+1 nanIndices(i+1)-1];
+        end
     end
-end
+    
 
 
 writematrix(newvecB','barB.txt','Delimiter',' '); 
