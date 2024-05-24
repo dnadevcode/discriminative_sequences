@@ -47,7 +47,7 @@ twoList = zeros(sum(subdirs),2);
 id=1;
 for i=1:length(subdirs)
     for j=1:subdirs(i)
-        twoList(id,:) = [i subdirs(i)];
+        twoList(id,:) = [i j];
         id = id+1;
     end
 end
@@ -57,7 +57,7 @@ end
 windowWidths=0 ; %[0 250:50:1000];
 sF = 0.9:0.025:1.1;
 thryFiles = dir('/proj/snic2022-5-384/users/x_albdv/data/CHR/New Ref-Theory files April 2024/*.mat');
-depth=1
+depth=1;
 
 v = cell(numDirs,subdirs(i));
 for i=4:numDirs
@@ -103,3 +103,117 @@ for i=1:numDirs
         v{i,j} =batch(c,@local_pipeline_mp,1,{i, j, dirName, depth, w, sF, thryFiles},'Pool',29);
     end
 end
+
+
+%%
+w = [550 750 800];
+idd = 1;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+w = [750:50:1000];
+idd = 2;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+w = [450 550 750 800];
+idd = 4;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+w = [450 750 800];
+idd = 5;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+w = [250 450 750 800];
+idd = 6;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+w = [250 450 550 750 800];
+idd = 7;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+w = [250 450 500 750 800];
+idd = 8;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+w = [250 450  750 800];
+idd = 9;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+
+
+w = [250 450 550 750 800];
+idd = 10;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+
+
+w = [250 450 500 750 800];
+idd = 11;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+
+
+
+w = [ 250 450 500  650:50:1000];
+idd = 12;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+
+
+
+w = [ 250 450 500 550  750 800];
+idd = 13;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+
+w = [ 250 450 500 550  750 800];
+idd = 14;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+w = [ 250 450 500 550  750 800 950:50:1000];
+idd = 15;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+w = [ 250 450  750:50:1000];
+idd = 16;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+w = [ 250 450 750 800];
+idd = 18;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
+
+
+
+
+
+
+
+w = [ 250 500 750 800];
+idd = 20;
+batch(c,@local_pipeline_mp,1,{twoList(idd,1),twoList(idd,2), dirName, depth, w, sF, thryFiles},'Pool',60);
+
