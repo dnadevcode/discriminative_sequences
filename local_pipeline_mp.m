@@ -188,9 +188,7 @@ for wIdx = 1:length(windowWidths)
 
     [rezMaxMP] = hca_compare_distance(barGen(passingThreshBars), theoryStruct, sets );
     
-    clear theoryStruct;
-    delete(gcp);
-    %
+
 
 %     cc(idy,idx) = rezMaxMP{1}(idx,idy).maxcoef(1);
 
@@ -232,6 +230,11 @@ for wIdx = 1:length(windowWidths)
 
 
 end
+
+clear theoryStruct;
+delete(gcp);
+    %
+
 
 t = toc(t0);
 % quick_visual_plot(16,9242,barGen,rezMax,bestBarStretch,theoryStruct)
