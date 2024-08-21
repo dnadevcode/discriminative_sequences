@@ -1,4 +1,4 @@
-function [t] = local_pipeline_mp(ix, iy, dirName, depth, windowWidths, sF, thryFiles)
+function [t] = local_pipeline_mp(ix, iy, dirName, depth, windowWidths, sF, thryFiles,timeFramesNr)
 
 % local_pipeline_mp - optimized function to run experiment vs theory
 % comparisons
@@ -78,13 +78,20 @@ sets.kymosets.kymofilefold = arrayfun(@(x) files(x).folder,1:length(files),'un',
 sets.output.matDirpath = 'output';
 sets.filterSettings.filter = 0;
 sets.skipEdgeDetection = 0;
-sets.bitmasking.untrustedPx = 6;
+sets.bitmasking.untrustedPx = 3*300/nmpx;
+
 sets.minLen = 150;
 sets.genConsensus  = 0;
 
 %  following "Strain-level bacterial typing directly from patient
 % samples using optical DNA mapping"
-sets.timeFramesNr = 20;
+
+if nargin < 8
+    sets.timeFramesNr = 20;
+else
+    sets.timeFramesNr = timeFramesNr;
+end
+
 if nargin < 5
     sets.theory.stretchFactors = 0.8:0.025:1; %as per 
 else
