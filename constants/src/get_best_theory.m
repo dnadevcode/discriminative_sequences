@@ -1,18 +1,28 @@
-function [mostCommonSequence,mostCommonRep,namesDir,thryDiscName] = get_best_theory(savedir, refNums, idSpecies, sfLevel, cdiff)
+function [distinctoutput, mostCommonSequence,mostCommonRep,namesDir,thryDiscName] = ...
+    get_best_theory(savedir, refNums, idSpecies,barN, twoList,foldname,thryNames, sepname, sfLevel, cdiff)
     % get id for best theory for each of the experiment folders
 
-    if nargin < 4
+    if nargin < 10
         sfLevel = 15; 
         cdiff = 0.05;
     end
 
+    if nargin < 8
+        sepname = 'oldhca';
+        split2 = 'Sample';
+    end
+
 
     dirs = dir(fullfile(savedir,'*.mat'));
-    
+    % distinctoutput
    lf = @(x,y) load(fullfile(x(y).folder,x(y).name));
 
    mostCommonSequence = zeros(1,length(dirs));
    mostCommonRep = zeros(1,length(dirs));
+   namesDir= cell(1,length(dirs));
+    thryDiscName= cell(1,length(dirs));
+    distinctoutput = cell(1,length(dirs));
+
 %%
     for nr = 1:length(dirs);
         nr
@@ -38,8 +48,8 @@ function [mostCommonSequence,mostCommonRep,namesDir,thryDiscName] = get_best_the
         % mostCommonSequence(nr) = mode(arrayfun(@(x) refNums{x}(1),find(is_distinct));
         % mostCommonRep(nr) = sum(arrayfun(@(x) refNums{x}(1),find(is_distinct))==mostCommonSequence(nr));
 
-
-          mostCommonSequence(nr) = mode(cell2mat(arrayfun(@(x) refNums{x},find(is_distinct),'un',false)')); % todo : weight by coefficien/position?
+        
+        mostCommonSequence(nr) = mode(cell2mat(arrayfun(@(x) refNums{x},find(is_distinct),'un',false)')); % todo : weight by coefficien/position?
         mostCommonRep(nr) = sum(cell2mat(arrayfun(@(x) refNums{x},find(is_distinct),'un',false)')==mostCommonSequence(nr));
 
 
@@ -49,20 +59,25 @@ function [mostCommonSequence,mostCommonRep,namesDir,thryDiscName] = get_best_the
         % nameFold = foldname{twoList(dirn,1)}{twoList(dirn,2)};
         % thryNames{mostCommonSequence(nr)}
 
-          dirn = strsplit(dirs(nr).name,['' ...
-              '' ...
-              'oldhca']);
-        dirn = str2num(dirn{1});
-        nameFold = foldname{twoList(dirn,1)}{twoList(dirn,2)};
-        nameFold = strsplit(nameFold,'Sample');
-        nameFold = strsplit(nameFold{2},'-');
-        nameFold = str2num(nameFold{1})
+        if mostCommonRep(nr)>0
 
-        namesDir{nr} = nameFold;
+            dirn = strsplit(dirs(nr).name,['' ...
+                  '' ...
+                  sepname]);
+            dirn = str2num(dirn{1});
+            nameFold = foldname{twoList(dirn,1)}{twoList(dirn,2)};
+            nameFold = strsplit(nameFold,'_');
+            nameFold = nameFold{2};
+            % nameFold = strsplit(nameFold,split2);
+            % nameFold = strsplit(nameFold{2},'-');
+            % nameFold = str2num(nameFold{1})
+    
+            namesDir{nr} = nameFold;
+    
+            thryDisc = strsplit(thryNames{mostCommonSequence(nr)},' ');
+            thryDiscName{nr} = thryDisc{1}(2:end);
 
-        thryDisc = strsplit(thryNames{mostCommonSequence(nr)},' ');
-        thryDiscName{nr} = thryDisc{1}(2:end);
-
+        end
 
 
     end
