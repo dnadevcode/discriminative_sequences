@@ -60,7 +60,7 @@ function [distinctoutput, mostCommonSequence,mostCommonRep,namesDir,thryDiscName
         % thryNames{mostCommonSequence(nr)}
 
         if mostCommonRep(nr)>0
-
+            try
             dirn = strsplit(dirs(nr).name,['' ...
                   '' ...
                   sepname]);
@@ -68,14 +68,17 @@ function [distinctoutput, mostCommonSequence,mostCommonRep,namesDir,thryDiscName
             nameFold = foldname{twoList(dirn,1)}{twoList(dirn,2)};
             nameFold = strsplit(nameFold,'_');
             nameFold = nameFold{2};
-            % nameFold = strsplit(nameFold,split2);
-            % nameFold = strsplit(nameFold{2},'-');
-            % nameFold = str2num(nameFold{1})
-    
             namesDir{nr} = nameFold;
     
+              catch
+                dirn = strsplit(dirs(nr).name,['' ...
+                  '' ...
+                  'allcoefs']);
+                namesDir{nr} = dirn{1};
+            end
             thryDisc = strsplit(thryNames{mostCommonSequence(nr)},' ');
             thryDiscName{nr} = thryDisc{1}(2:end);
+    
 
         end
 

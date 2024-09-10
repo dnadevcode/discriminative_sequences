@@ -69,7 +69,7 @@ parfor expNr = 1:length(bG)
      hcaSets.folder{1} = chr1{expNr} ;    
 
     hcaTheory = arrayfun(@(x) run_hca_theory(hcaSets,x,netrospin),yoyo,'un',false);
-    [compI2{expNr},rezI2,m2(expNr),st2(expNr)] = run_comp(barcodeGen,hcaTheory,nmbp,sets,sF);
+    [compI2{expNr},rezI2,m2(expNr),st2(expNr)] = run_comp(barcodeGen,hcaTheory,nmbp,sets,sF); % change this one
 
     
     stoufferScoresL = cellfun(@(x) double(norminv(1-x.pval)),compI2{expNr},'un',true);

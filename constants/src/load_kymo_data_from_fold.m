@@ -1,4 +1,4 @@
-function [kymoStructs,barN,twoList,bG,expPar,fastaFileF] = load_kymo_data_from_fold(dirName, refsNames,allTheoryFold)
+function [kymoStructs,barN,twoList,bG,expPar,fastaFileF] = load_kymo_data_from_fold(dirName, refsNames,allTheoryFold,sF,timeframesNr)
     
     if nargin < 3
         allTheoryFold = '/export/scratch/albertas/download_dump/single/*.fasta';
@@ -21,15 +21,19 @@ function [kymoStructs,barN,twoList,bG,expPar,fastaFileF] = load_kymo_data_from_f
     
         thry = refsNames{twoList(expNr,1)};
     
+        if ~isempty(allTheoryFold)
         %% get theory location
-        dr = dir(allTheoryFold);
-    
-        thryLoc = find(arrayfun(@(x) ~isempty(strfind(dr(x).name, thry)),1:length(dr)));
-    
-        fastaFileF{expNr} = fullfile(dr(thryLoc).folder,dr(thryLoc).name);
-    
+            dr = dir(allTheoryFold);
+        
+            thryLoc = find(arrayfun(@(x) ~isempty(strfind(dr(x).name, thry)),1:length(dr)));
+        
+            fastaFileF{expNr} = fullfile(dr(thryLoc).folder,dr(thryLoc).name);
+        else
+            fastaFileF{expNr} = [];
+        end
+        
         %% Now load the experiments
-        [kymoStructs{expNr}, bG{expNr}, expPar{expNr}.nmpx, expPar{expNr}.nmbp] = load_kymo_data(dirName,1,twoList(expNr,1),twoList(expNr,2));
+        [kymoStructs{expNr}, bG{expNr}, expPar{expNr}.nmpx, expPar{expNr}.nmbp] = load_kymo_data(dirName,1,twoList(expNr,1),twoList(expNr,2),sF,timeframesNr);
     
     end
 

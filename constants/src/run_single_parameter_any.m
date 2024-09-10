@@ -15,6 +15,11 @@ pxSize = nmpx/nmbp; % pixel size
 parlist =  [gcSF,pxSize,nmpx,isC,sigma,kN,psf,cY,cN,kY,ligandLength];
 parlistcell = @(x, parnr) num2cell([parlist(1:parnr-1) x parlist(parnr+1:end)]) ;
 
+
+% parlist = @(psf) [gcSF,pxSize,nmpx,isC,sigma,kN,psf,cY,cN,kY,ligandLength];
+% parlistcell = @(psf) num2cell(parlist(psf)) ;
+
+
 %   [~,mid,~] = fileparts(hcaSets.folder{1} );
 % delete(['seq_example',mid,'_',num2str(ligandLength) ,'.mat']);
 

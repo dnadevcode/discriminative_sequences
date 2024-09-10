@@ -17,11 +17,11 @@ toc
 
 
 try
-m =cellfun(@(y) mean(cellfun(@(x) x.maxcoef(1),y)), rezI);
-st = cellfun(@(y) std(cellfun(@(x) x.maxcoef(1),y)), rezI);
+    m =cellfun(@(y) mean(cellfun(@(x) x.maxcoef(1),y)), rezI);
+    st = cellfun(@(y) std(cellfun(@(x) x.maxcoef(1),y)), rezI);
 catch
-m =0;
-st = 0;
+    m =0;
+    st = 0;
 end
 
 end

@@ -14,7 +14,7 @@ end
 
 for i=1:length(barGen)
     lenBarTested = length(barGen{i}.rawBarcode);
-
+    barGen{i}.rescaled = [];
     for j=1:length(stretchFactors)
         barGen{i}.rescaled{j}.rawBarcode =  interp1(barGen{i}.rawBarcode, linspace(1,lenBarTested,lenBarTested*initialStretch(i)*stretchFactors(j)));
         barGen{i}.rescaled{j}.rawBitmask  = barGen{i}.rawBitmask(round(linspace(1,lenBarTested,lenBarTested*initialStretch(i)*stretchFactors(j))));
