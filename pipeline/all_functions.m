@@ -56,3 +56,6 @@ sflevel = 1; % 1 :-10.. 2: -7.5.. 3: -5 .. ...
 %% run_mp_based_local_alignment
 %   Script to run matrix profile based local alignment
 
+
+%% Pre-generate theory
+CBT.SimpleTwoState.pregenerate_ligand_index(sequence_list,'/proj/dnadevdata/users/x_albdv/data/all/single2/',4,1,110/0.34)
