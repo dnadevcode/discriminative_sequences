@@ -11,5 +11,5 @@ function plot_at_preference_model(bG,mA,mtwo,name)
     legend({'hca','2state'},'location','southoutside')
     xlabel(name)
     ylabel('Mean PCC')
-    ylim([0.5 0.8])
+    ylim([min([mA(:);mtwo(:)])-0.01 0.01+max([mA(:) ;mtwo(:)])])
 end

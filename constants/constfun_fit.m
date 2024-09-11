@@ -24,7 +24,7 @@ import Core.Discriminative.generate_sf_struct;
             a = theory.rawBarcode(barGen{i}.rescaled{1}.rawBitmask);
             b = barGen{i}.rescaled{1}.rawBarcode(barGen{i}.rescaled{1}.rawBitmask);
             if compI.or(i) ==2
-                b= fliplr(b);
+                b = fliplr(b);
             end
             compInew{i}.maxcoef = zscore(a,1)*zscore(b',1)/length(a);
 

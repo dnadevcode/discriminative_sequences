@@ -19,7 +19,8 @@ dirName = '/export/scratch/albertas/download_dump/S. pyogenes all data/onlyKymo/
 refsNames = '/home/avesta/albertas/reps/discriminative_sequences/constants/pyo_theories.txt';
 allTheoryFold = '/export/scratch/albertas/download_dump/single/*.fasta';
 
-[kymoStructs,barN,twoList,bG,expPar,fastaFileF] = load_kymo_data_from_fold(dirName, refsNames,allTheoryFold,0.9:0.025:1.1,0);
+sF = 0.8:0.025:1.2;
+[kymoStructs,barN,twoList,bG,expPar,fastaFileF] = load_kymo_data_from_fold(dirName, refsNames,allTheoryFold,sF,0);
 
 %% Load all names and unique seq 
 matFile = '/export/scratch/albertas/download_dump/single/theoryOutput/theoryGen_0.34_110_300_0_2024-04-24_19_10_40_session.mat';
