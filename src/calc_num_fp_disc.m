@@ -9,12 +9,12 @@ maxData = lf(dirs,nr);
 % cdiff = 0.01:0.01:0.1;
 % idSeq = 4717;
 
+% maxData.matAllCoefs
 
 
 num_disc = zeros(floor(size(maxData.matAllCoefs,2)/2+1),length(cdiff));
 numFP = zeros(floor(size(maxData.matAllCoefs,2)/2+1),length(cdiff));
 numUnique= zeros(floor(size(maxData.matAllCoefs,2)/2+1),length(cdiff));
-
 for j=1:floor(size(maxData.matAllCoefs,2)/2+1)
     sfLevel = j;
     maxCoef = cell(1,size(maxData.matAllCoefs,1));
